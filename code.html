@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Visual Studio - Gallery</title>
+    <link rel="stylesheet" href="css/code_style.css">
+</head>
+<body>
+
+    <div id="particle-container"></div>
+
+    <header class="main-header">
+        <a href="index.html" class="logo-link">
+            <div class="logo">movie</div>
+        </a>
+        <nav class="nav-menu">
+            <a href="about.html">About</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="story.html">Story</a>
+            <a href="code.html"class="active">Code</a>
+            <a href="content.html">Content</a>
+        </nav>
+    </header>
+<body>
+    <main class="container">
+         <header class="gallery-hero">
+            <span class="sub-title">OUR PORTFOLIO</span>
+            <h1 class="main-title split-text" id="gallery-title">Selected Works</h1>
+        </header>
+
+        <section class="grid">
+            <article class="card" onclick="location.href='cardgame.html'">
+                <div class="thumbnail" style="background-image: url(images/cardgame_sumnail.png);"></div>
+                <h2>카드매칭게임o</h2>
+                <p>우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                <div class="meta"><span>Alex</span> <span>2026.04.12</span></div>
+            </article>
+            <article class="card" onclick="location.href='particle.html'" target="_blank">
+                <div class="thumbnail" style="background-image: url(images/행성/earth_sumnail.png);"></div>
+                <h2>파티클 인터렉션 웹페이지 </h2>
+                <p>행성의 요소를 파티클 인터랙션을 활용해 움직이는 페이지를 제작한 프로젝트 입니다.</p>
+                <div class="meta"><span>Admin</span> <span>2026.05.20</span></div>
+            </article>
+            <article class="card" onclick="location.href='detail.html'">
+                <div class="thumbnail" style="background-image: url('https://via.placeholder.com/400x250');"></div>
+                <h2>AI SNS 카드뉴스 만들기</h2>
+                <p>Z세대가 선호하는 그림체로 시각적 만족감을 극대화하여...</p>
+                <div class="meta"><span>Designer</span> <span>2026.06.01</span></div>
+            </article>
+        </section>
+    </main>
+
+    <script src="js/code_script.js"></script>
+</body>
+</html>

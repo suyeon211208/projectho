@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Visual Studio - Story</title>
+    <link rel="stylesheet" href="css/story_style.css">
+</head>
+<body>
+   <div id="particle-container"></div>
+
+    <header class="main-header">
+        <a href="index.html" class="logo-link">
+            <div class="logo">movie</div>
+        </a>
+        <nav class="nav-menu">
+            <a href="about.html">About</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="story.html"class="active">Story</a>
+            <a href="code.html">Code</a>
+            <a href="content.html">Content</a>
+        </nav>
+    </header>
+
+    <main class="story-container">
+        <header class="gallery-hero">
+            <span class="sub-title">Our Stories</span>
+            <h1 class="main-title split-text" id="gallery-title">Selected Works</h1>
+        </header>
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="filterGallery('all')">All Works</button>
+            <button class="tab-btn" onclick="filterGallery('film')">Film</button>
+            <button class="tab-btn" onclick="filterGallery('video')">video</button>
+            <button class="tab-btn" onclick="filterGallery('programing')">programing</button>
+        </div>
+
+        <div class="story-grid">
+           <article class="story-card" 
+            data-title="AI와 디자인의 미래" 
+            data-date="2026.06.20" 
+            data-content='
+            [{"type": "text", "value": "첫 번째 본문 내용입니다."}, 
+            {"type": "image", "value": "images/kb_01.png"}, 
+            {"type": "text", "value": "두 번째 본문 내용입니다."}]'>
+                <span class="date">2026.06.20</span>
+                <h2 class="title">AI와 디자인의 미래</h2>
+                <p class="excerpt">디자인 프로세스에서 AI가 차지하는 비중과 도구 활용법</p>
+            </article>
+        </div>
+    </main>
+
+    <div id="story-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal(event)">&times;</button>
+            <div class="modal-body">
+                <header class="post-header">
+                    <span id="modal-date" class="date"></span>
+                    <h1 id="modal-title" class="title"></h1>
+                </header>
+                <div id="modal-body-text" class="post-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/story_script.js"></script>
+</body>
+</html>

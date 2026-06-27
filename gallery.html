@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Visual Studio - Gallery</title>
+    <link rel="stylesheet" href="css/gallery_style.css">
+</head>
+<body>
+
+    <div id="particle-container"></div>
+
+    <header class="main-header">
+        <a href="index.html" class="logo-link">
+            <div class="logo">movie</div>
+        </a>
+        <nav class="nav-menu">
+            <a href="about.html">About</a>
+            <a href="gallery.html" class="active">Gallery</a>
+            <a href="story.html">Story</a>
+            <a href="code.html">Code</a>
+            <a href="content.html">Content</a>
+        </nav>
+    </header>
+
+    <main class="gallery-container">
+        <header class="gallery-hero">
+            <span class="sub-title">OUR PORTFOLIO</span>
+            <h1 class="main-title split-text" id="gallery-title">Selected Works</h1>
+        </header>
+
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="filterGallery('all')">All Works</button>
+            <button class="tab-btn" onclick="filterGallery('film')">Film</button>
+            <button class="tab-btn" onclick="filterGallery('video')">video</button>
+            <button class="tab-btn" onclick="filterGallery('programing')">programing</button>
+        </div>
+
+        <div class="gallery-grid">
+            <!--비디오-->
+            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 서영주', '2026.04.12', 'video/영상작업/syj01.mp4')">
+                <div class="card-img-wrap">
+                    <img src="images/영상 썸네일/syj01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 권별', '2026.04.12', 'video/영상작업/kb01.mp4')">
+                <div class="card-img-wrap">
+                    <img src="images/영상 썸네일/kb01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 나태웅', '2026.04.12', 'video/영상작업/ntw.mp4')">
+                <div class="card-img-wrap">
+                    <img src="images/영상 썸네일/ntw01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">나태웅</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 나태웅', '2026.04.12', 'video/영상작업/ksm01.mp4')">
+                <div class="card-img-wrap">
+                    <img src="images/영상 썸네일/ksm01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">김선민</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+
+
+            <!--이미지-->
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'TAI로 비주얼 아트 전시 및 콘텐츠 포스터 제작.', 'film', '전시의 소비가 생산으로 이어지는 구조를 이용해 경험 소비와 숏폼 컨텐츠 바이럴 전략을 표현하였다.', '서영주', '2026.04.12', 'images/이미지 작업/syj01.png, images/이미지 작업/syj02.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/syj01.png" alt="Liquid Sculptures 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">AI로 비주얼 아트 전시 및 콘텐츠 포스터 제작.</h3>
+                    <p class="card-desc">전시의 소비가 생산으로 이어지는 구조를 이용해 경험 소비와 숏폼 컨텐츠 바이럴 전략을 표현하였다.</p>
+                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.05.18</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'AI SNS 카드뉴스 만들기', 'film', 'AZ세대가 선호하는 그림체로 시각적 만족감을 극대화하여 K-라이프스타일 정보를 공급한다.', '권별', '2026.06.01', 'images/이미지 작업/kb_01.png, images/이미지 작업/kb_02.png,images/이미지 작업/kb_03.png, images/이미지 작업/kb_04.png,images/이미지 작업/kb_05.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/kb_01.png" alt="Minimal Identity 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">AI SNS 카드뉴스 만들기</h3>
+                    <p class="card-desc">Z세대가 선호하는 그림체로 시각적 만족감을 극대화하여 K-라이프스타일 정보를 공급한다.</p>
+                    <div class="card-meta"><span class="author">권별</span><span class="date">2026.06.01</span></div>
+                </div>
+            </div>
+
+            <div class="gallery-card" data-category="film" onclick="openModal(event, '서울역 전시물 기획', 'film', '몰입 경험과 한국적 미감의 결합으로 높은 경쟁력을 갖추고 있으나, 공공장소 내 대규모 인파에 따른 시스템 안정성 확보와지속적인 유지보수 체계 구축이 프로젝트 성공의 핵심 과제로 작용한다.', '나태웅', '2026.02.20', 'images/이미지 작업/ntw01.png, images/이미지 작업/ntw02.png, images/이미지 작업/ntw03.png, images/이미지 작업/ntw04.png, images/이미지 작업/ntw05.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/ntw01.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">서울역 전시물 기획</h3>
+                    <p class="card-desc">몰입 경험과 한국적 미감의 결합으로 높은 경쟁력을 갖추고 있으나, 공공장소 내 대규모 인파에 따른 시스템 안정성 확보와
+지속적인 유지보수 체계 구축이 프로젝트 성공의 핵심 과제로 작용한다.</p>
+                    <div class="card-meta"><span>나태웅</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'images/이미지 작업/kmj01.png, images/이미지 작업/kmj02.png, images/이미지 작업/kmj03.png, images/이미지 작업/kmj04.png, images/이미지 작업/kmj05.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/kmj01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">구민재</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'images/이미지 작업/jj01.png, images/이미지 작업/jj02.png, images/이미지 작업/jj03.png, images/이미지 작업/jj04.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/jj03.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">정진</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'images/이미지 작업/hsh01.png, images/이미지 작업/hsh02.png, images/이미지 작업/hsh03.png, images/이미지 작업/hsh04.png, images/이미지 작업/hsh05.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/hsh04.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">황세희</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'images/이미지 작업/jyj01.png, images/이미지 작업/jyj02.png, images/이미지 작업/jyj03.png, images/이미지 작업/jyj04.png, images/이미지 작업/jyj05.png, images/이미지 작업/jyj06.png, images/이미지 작업/jyj07.png, images/이미지 작업/jyj08.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/jyj03.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">주용진</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 정지운', '2026.04.12', 'images/이미지 작업/jjw01.png, images/이미지 작업/jjw02.png, images/이미지 작업/jjw03.png, images/이미지 작업/jjw04.png, images/이미지 작업/jjw05.png, images/이미지 작업/jjw06.png, images/이미지 작업/jjw07.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/jjw04.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">정지운</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 송예준', '2026.04.12', 'images/이미지 작업/syj2_01.png, images/이미지 작업/syj2_02.png, images/이미지 작업/syj2_03.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/syj2_02.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">송예준</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 서은채', '2026.04.12', 'images/이미지 작업/syc01.png, images/이미지 작업/syc02.png, images/이미지 작업/syc03.png, images/이미지 작업/syc04.png,images/이미지 작업/syc05.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/syc02.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">서은채</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 이강호', '2026.04.12', 'images/이미지 작업/lkh01.png, images/이미지 작업/lkh02.png, images/이미지 작업/lkh03.png, images/이미지 작업/lkh04.png,images/이미지 작업/lkh05.png,images/이미지 작업/lkh06.png')">
+                <div class="card-img-wrap">
+                    <img src="images/이미지 작업/lkh02.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">이강호</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+
+            
+            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'video/video02.mov,video/video01.mov')">
+                <div class="card-img-wrap">
+                    <img src="images/video_01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">The Silent Echo</h3>
+                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
+                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+
+
+
+        </div>
+    </main>
+
+ <div id="gallery-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal(event)">&times;</button>
+            <div class="modal-body">
+                
+                <div class="modal-img-area" style="position: relative;">
+                    <button type="button" class="slide-btn prev-btn" onclick="moveSlide(-1)">&lsaquo;</button>
+                    
+                    <img id="modal-real-img" src="" alt="상세 이미지" class="modal-main-img">
+                    <video id="modal-real-video" src="" class="modal-main-video" autoplay muted loop playsinline controls style="display: none;"></video>
+                    
+                    <button type="button" class="slide-btn next-btn" onclick="moveSlide(1)">&rsaquo;</button>
+                </div>
+
+                <div class="modal-info-area">
+                    <div class="modal-info-top">
+                        <span id="modal-category" class="modal-tag">CATEGORY</span>
+                        <h2 id="modal-title" class="modal-main-title">Project Title</h2>
+                        <p id="modal-desc" class="modal-desc">상세 설명 공간</p>
+                    </div>
+                    <div class="modal-meta-box">
+                        <div class="meta-item"><strong>Worker</strong> <span id="modal-author">-</span></div>
+                        <div class="meta-item"><strong>Date</strong> <span id="modal-date">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/gallery_script.js"></script>
+</body>
+</html>

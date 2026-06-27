@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>파티클 웹</title>
+    <link rel="stylesheet" href="css/particle_style.css">
+
+  </head>
+    
+  <body>
+  <html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ORRERY | Solar System Explorer</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+
+
+    <nav class="navbar">
+
+        <div class="nav-logo">ORRERY</div>
+
+        <ul class="nav-menu">
+
+            <li><a href="#hero">HOME</a></li>
+
+            <li><a href="#mercury">MERCURY</a></li>
+
+            <li><a href="#venus">VENUS</a></li>
+
+            <li><a href="#earth">EARTH</a></li>
+
+            <li><a href="#mars">MARS</a></li>
+
+            <li><a href="#jupiter">JUPITER</a></li>
+
+            <li><a href="#saturn">SATURN</a></li>
+
+        </ul>
+
+    </nav>
+
+
+
+    <canvas id="spaceCanvas"></canvas>
+
+
+
+    <main>
+
+        <section id="hero" class="section active" data-index="0">
+
+            <div class="hero-content">
+
+                <span class="sub-label">EXPLORE THE UNIVERSE</span>
+
+                <h1>ORRERY</h1>
+
+                <p>태양계의 행성들을 탐사하고 그 신비로운 데이터와 환경을 학습합니다.</p>
+
+            </div>
+
+        </section>
+
+
+
+        <section id="mercury" class="section" data-index="1">
+
+            <div class="planet-card left">
+
+                <span class="card-num">01</span>
+<img src="images/행성/MERCURY.png" alt="Mercury" class="planet-img">
+                <h2>MERCURY</h2>
+
+                <p>태양과 가장 가까운 행성. 극심한 온도 변화와 크레이터로 가득 찬 표면이 특징입니다.</p>
+
+                <div class="planet-data">
+
+                    <div class="data-item"><span>반지름</span><strong>2,439 km</strong></div>
+
+                    <div class="data-item"><span>표면온도</span><strong>430°C</strong></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <section id="venus" class="section" data-index="2">
+
+            <div class="planet-card right">
+
+                <span class="card-num">02</span>
+<img src="images/행성/Venus_globe.jpg" alt="Venus" class="planet-img">
+                <h2>VENUS</h2>
+
+                <p>두꺼운 이산화탄소 대기층으로 인해 온실효과가 극대화된 행성입니다.</p>
+
+                <div class="planet-data">
+
+                    <div class="data-item"><span>대기성분</span><strong>CO2(96%)</strong></div>
+
+                    <div class="data-item"><span>표면온도</span><strong>462°C</strong></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <section id="earth" class="section" data-index="3">
+
+            <div class="planet-card left">
+
+                <span class="card-num">03</span>
+<img src="images/행성/earth.jpg" alt="Earth" class="planet-img">
+                <h2>EARTH</h2>
+
+                <p>액체 상태의 물이 존재하며 생명체가 확인된 유일한 행성입니다.</p>
+
+                <div class="planet-data">
+
+                    <div class="data-item"><span>위성</span><strong>1개</strong></div>
+
+                    <div class="data-item"><span>공전주기</span><strong>365.2일</strong></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <section id="mars" class="section" data-index="4">
+
+            <div class="planet-card right">
+
+                <span class="card-num">04</span>
+<img src="images/행성/ MARS.jpg" alt="Mars" class="planet-img">
+                <h2>MARS</h2>
+
+                <p>붉은 행성. 지구와 가장 유사한 환경을 지니며 인류의 차세대 개척지로 주목받습니다.</p>
+
+                <div class="planet-data">
+
+                    <div class="data-item"><span>중력</span><strong>지구의 38%</strong></div>
+
+                    <div class="data-item"><span>위성</span><strong>2개</strong></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <section id="jupiter" class="section" data-index="5">
+
+            <div class="planet-card left">
+
+                <span class="card-num">05</span>
+<img src="images/행성/JUPITER.png" alt="Jupiter" class="planet-img">
+                <h2>JUPITER</h2>
+
+                <p>태양계에서 가장 큰 가스 거대 행성. 거대한 대적점이 특징입니다.</p>
+
+                <div class="planet-data">
+
+                    <div class="data-item"><span>위성</span><strong>95개+</strong></div>
+
+                    <div class="data-item"><span>자전주기</span><strong>9.9시간</strong></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <section id="saturn" class="section" data-index="6">
+
+            <div class="planet-card right">
+
+                <span class="card-num">06</span>
+<img src="images/행성/SATURN.jpeg" alt="Saturn" class="planet-img">
+                <h2>SATURN</h2>
+
+                <p>아름다운 고리 시스템을 가진 가스 행성으로 밀도가 물보다 낮습니다.</p>
+
+                <div class="planet-data">
+
+                    <div class="data-item"><span>고리구성</span><strong>얼음·먼지</strong></div>
+
+                    <div class="data-item"><span>위성</span><strong>146개+</strong></div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+<script src="script.js" defer></script>
+
+</body>
+
+</html>
+    <script  src="js/particle_script.js"></script>
+
+  </body>
+  
+</html>
