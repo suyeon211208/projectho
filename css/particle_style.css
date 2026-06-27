@@ -1,0 +1,28 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; color: #fff; font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
+
+/* 네비게이션 */
+.navbar { position: fixed; top: 0; width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center; padding: 0 60px; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.nav-logo { font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 4px; }
+.nav-menu { display: flex; list-style: none; gap: 30px; }
+.nav-menu a { text-decoration: none; color: #999; font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; }
+
+/* 캔버스 */
+#spaceCanvas { position: fixed; top: 0; left: 0; z-index: -1; }
+
+/* 섹션 및 카드 */
+.section { width: 100%; min-height: 100vh; display: flex; align-items: center; padding: 0 15%; position: relative; }
+.hero-content { text-align: center; margin: 0 auto; }
+.hero-content h1 { font-family: 'Cinzel', serif; font-size: 6rem; letter-spacing: 20px; }
+
+.planet-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); padding: 50px; width: 450px; border: 1px solid rgba(255,255,255,0.1); }
+.left { margin-right: auto; border-left: 4px solid #fff; }
+.right { margin-left: auto; border-right: 4px solid #fff; }
+
+.card-num { font-size: 0.7rem; color: #666; }
+h2 { font-size: 2.2rem; margin: 15px 0; }
+.planet-data { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #333; padding-top: 20px; margin-top: 20px; }
+.data-item span { display: block; font-size: 0.6rem; color: #888; }
+#spaceCanvas { position: fixed; top: 0; left: 0; z-index: -1; }
+.planet-img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 2px solid #555; }
+.planet-card { display: flex; flex-direction: column; align-items: center; text-align: center; background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; }

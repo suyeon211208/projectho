@@ -1,0 +1,441 @@
+/* =============================================================
+   Premium Visual Studio - Gallery 통합 스타일시트
+   ============================================================= */
+
+/* 1. 기본 스타일 리셋 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Pretendard', sans-serif;
+    background-color: #ffffff;
+    color: #0f172a; 
+    letter-spacing: -0.03em;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* =============================================================
+   ★ 상단 고정 헤더 영역 (About 페이지 동기화)
+   ============================================================= */
+.main-header {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 40px;
+    z-index: 10000;
+    background: rgba(255, 255, 255, 0.85); 
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.logo-link {
+    text-decoration: none;
+    display: inline-block;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0f172a; 
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 40px;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0); 
+}
+
+.nav-menu a {
+    color: #64748b; 
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600; 
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active {
+    color: #0f172a; 
+}
+
+.nav-menu a.active {
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 4px;
+}
+
+/* =============================================================
+   [About 동일 구현] 마우스 추적 액체 파티클 스타일 키프레임
+   ============================================================= */
+#particle-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none; 
+    z-index: 9999;
+}
+
+.particle {
+    position: absolute;
+    background-color: rgba(15, 23, 42, 0.18); 
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: fadeAndFly 1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes fadeAndFly {
+    0% {
+        transform: translate(-50%, -50%) translate(0, 0) scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: translate(-50%, -50%) translate(var(--mx), var(--my)) scale(0.1);
+        opacity: 0;
+    }
+}
+
+/* =============================================================
+   갤러리 레이아웃 대구조
+   ============================================================= */
+.gallery-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 160px 20px 100px 20px; 
+}
+
+.gallery-hero {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.sub-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: #64748b;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 15px;
+}
+
+/* =============================================================
+   [About 동일 구현] 스플릿 타이포 호버 애니메이션
+   ============================================================= */
+.split-text span {
+    display: inline-block;
+    opacity: 0.25; 
+    transform: translateY(0);
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s linear, color 0.2s ease;
+    will-change: opacity, transform;
+    cursor: default;
+}
+
+.split-text span.hovered {
+    opacity: 1;
+    transform: translateY(-8px);
+    color: #2563eb; 
+}
+
+/* 필터 탭 메뉴 */
+.tab-menu {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 60px;
+}
+
+.tab-btn {
+    background: none;
+    border: 1px solid #e2e8f0;
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover,
+.tab-btn.active {
+    background-color: #0f172a;
+    border-color: #0f172a;
+    color: #ffffff;
+}
+
+/* =============================================================
+   ★ 3×3 그리드 구조 및 이미지 방어형 카드 디자인 (비율 완벽 고정)
+   ============================================================= */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 40px 30px; 
+}
+
+.gallery-card {
+    cursor: pointer;
+    transform-style: preserve-3d; 
+    transition: transform 0.1s ease-out, opacity 0.3s ease;
+    will-change: transform;
+}
+
+/* [핵심] 이미지를 가두는 고정 비율 4:3 부모 랩 */
+.card-img-wrap {
+    width: 100%;
+    aspect-ratio: 4 / 3; /* 어떤 규격이 오든 4:3 영역 스케일 강제 사수 */
+    border-radius: 12px;
+    overflow: hidden; 
+    margin-bottom: 15px;
+    background-color: #f1f5f9; 
+    transform: translateZ(20px); 
+    transition: transform 0.4s ease;
+}
+
+/* [핵심] 찌그러짐을 완벽 방지하는 썸네일 전용 속성 */
+.card-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 원본 비율을 깨지 않고 박스 중심을 채움 */
+    object-position: center; 
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    display: block;
+}
+
+/* 호버 시 썸네일 스무스 줌인 */
+.gallery-card:hover .card-thumb-img {
+    transform: scale(1.08); 
+}
+
+/* 카드 정보 텍스트 */
+.card-info { padding: 5px 2px; }
+.card-title { font-size: 1.35rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+.card-desc {
+    font-size: 0.95rem; color: #475569; line-height: 1.5; margin-bottom: 12px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; /* 두 줄 이상 오버 시 생략(...) 처리 */
+}
+.card-meta { display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8; font-weight: 500; }
+
+/* =============================================================
+   액체형 원형 확산 팝업 모달 디자인 (비율 완벽 고정)
+   ============================================================= */
+/* =============================================================
+   ★ 원본 비율 유지 가변형 모달 디자인 (잘림 방지)
+   ============================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 20000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    padding: 20px;
+}
+
+.modal-overlay.show { opacity: 1; }
+
+/* =============================================================
+   ★ 액체 확장 애니메이션 버그 수정본
+   ============================================================= */
+.modal-content {
+    background-color: #ffffff;
+    width: auto;             /* 내부 콘텐츠(미디어) 크기에 맞춤 */
+    max-width: 90vw;         /* 브라우저 폭의 최대 90% */
+    max-height: 90vh;        /* 브라우저 높이의 최대 90% */
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    
+    /* [기존 유지] 처음에는 마우스 클릭 지점에 원 크기를 0%로 세팅 */
+    clip-path: circle(0% at var(--click-x, 50%) var(--click-y, 50%)); 
+    transition: clip-path 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* 팝업이 열릴 때 (show 클래스가 붙을 때) */
+.modal-overlay.show .modal-content {
+    /* [수정] 가변형 대형 팝업까지 완전히 채울 수 있도록 반지름을 300%로 확장 */
+    clip-path: circle(300% at var(--click-x, 50%) var(--click-y, 50%)); 
+}
+
+/* 닫기 버튼을 미디어와 겹치지 않게 우측 상단 배치 고정 */
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    border: none;
+    font-size: 1.8rem;
+    color: #0f172a;
+    cursor: pointer;
+    z-index: 50;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: block;
+    line-height: 32px;
+    text-align: center;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;  /* 미디어가 위, 텍스트가 아래로 흐르는 구조 */
+    max-height: 90vh;
+}
+
+/* 미디어 가두기 박스 */
+.modal-img-area {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;  /* 미디어 로딩 전 혹은 미세 여백 블랙 처리 */
+    overflow: hidden;
+}
+
+/* 이미지 & 비디오 찌러짐/잘림 절대 방지 공통 설정 */
+.modal-main-img,
+.modal-main-video {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    /* 화면 높이를 차지하되, 하단 정보창(약 200px) 공간을 고려해 최대 높이 제한 */
+    max-height: calc(90vh - 220px); 
+    object-fit: contain;     /* 종횡비를 유지하며 영역 내에 통째로 채움 (잘림 없음) */
+}
+
+/* 하단 텍스트 정보 영역 */
+.modal-info-area {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-top: 1px solid #f1f5f9;
+    min-height: 200px;       /* 정보 영역의 최소 높이 고정 */
+}
+
+.modal-tag { font-size: 0.8rem; font-weight: 700; color: #2563eb; letter-spacing: 0.1em; margin-bottom: 8px; display: inline-block;}
+.modal-main-title { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; line-height: 1.3; }
+.modal-desc { font-size: 0.95rem; color: #475569; line-height: 1.6; margin-bottom: 20px; }
+.modal-meta-box { border-top: 1px solid #f1f5f9; padding-top: 15px; display: flex; gap: 30px; }
+.meta-item { font-size: 0.85rem; color: #64748b; }
+.meta-item strong { color: #0f172a; margin-right: 8px; }
+
+/* =============================================================
+   ★ 멀티 슬라이더 버튼 스타일 추가
+   ============================================================= */
+.modal-img-area {
+    position: relative; /* 화살표 배치를 위한 기준점 */
+}
+
+/* 화살표 슬라이드 버튼 공통 스타일 */
+.slide-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    border: none;
+    color: #ffffff;
+    font-size: 2.5rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 99;
+    display: none; /* 기본 숨김 후 여러 개일 때만 JS가 켬 */
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 4px;
+    transition: background 0.2s;
+}
+.slide-btn:hover { background: rgba(15, 23, 42, 0.8); }
+.prev-btn { left: 20px; }
+.next-btn { right: 20px; }
+
+
+.slide-btn:hover {
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.prev-btn { left: 20px; }
+.next-btn { right: 20px; }
+
+/* 미디어가 1개밖에 없을 때는 화살표를 자동으로 숨기기 위한 클래스 */
+.slide-btn.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 화살표 슬라이드 버튼 최종 디자인 */
+.slide-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    border: none;
+    color: #ffffff;
+    font-size: 2.5rem;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 99;
+    display: none; /* 기본 숨김 상태에서 이미지가 복수일 때만 스크립트가 켬 */
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 5px;
+    transition: background 0.2s, transform 0.2s;
+}
+.slide-btn:hover { background: rgba(15, 23, 42, 0.9); transform: translateY(-50%) scale(1.05); }
+.prev-btn { left: 20px; }
+.next-btn { right: 20px; }
+
+/* 모바일 환경 최적화 */
+@media (max-width: 768px) {
+    .modal-content { max-width: 95vw; }
+    .modal-info-area { padding: 20px 25px; min-height: 180px; }
+    .modal-main-img, .modal-main-video { max-height: calc(90vh - 200px); }
+    .modal-main-title { font-size: 1.4rem; }
+}
+/* 모바일 브레이크 포인트 최적화 */
+@media (max-width: 968px) {
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .modal-body { flex-direction: column; }
+    .modal-info-area { padding: 30px 25px; }
+    .modal-content { clip-path: none !important; transform: translateY(20px); transition: transform 0.4s ease; }
+}
+
+@media (max-width: 640px) {
+    .gallery-grid { grid-template-columns: 1fr; }
+    .main-title { font-size: 2.5rem; }
+    .split-text span { opacity: 1; } 
+}

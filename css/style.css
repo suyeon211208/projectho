@@ -1,0 +1,154 @@
+/* css/style.css */
+
+/* 1. 기본 스타일 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    /* 메뉴 클릭 시 해당 섹션으로 부드럽게 스크롤 이동 */
+    scroll-behavior: smooth; 
+}
+
+body {
+    background-color: #000;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+/* 2. 헤더 레이아웃 (Flexbox 적용 및 Sticky 고정) */
+.main-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 40px;
+    z-index: 10;
+    background: transparent; /* 배경 영상과 겹치도록 투명하게 설정 */
+    transition: all 0.4s ease;
+
+    /* 수평 정렬 및 수직 중앙 정렬 처리 */
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+/* 3. 로고 스타일 (항상 고정 노출) */
+.logo-link {
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* 3. 로고 스타일 (기존 코드에 color 및 폰트 설정 유지) */
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff; /* 링크가 되어도 하얀색을 유지하도록 강제 설정 */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+}
+
+/* [추가] 로고에 마우스를 올렸을 때 살짝 흐려지는 피드백 효과 (선택사항) */
+.logo-link:hover .logo {
+    color: #aaa;
+}
+/* 4. 네비게이션 메뉴 스타일 (초기 상태: 숨김 및 상단 대기) */
+.nav-menu {
+    display: flex;
+    gap: 40px;
+    
+    /* 메뉴를 화면 정중앙에 수평 정렬하기 위한 절대 좌표 설정 */
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -10px); /* 위로 10px 살짝 띄워둠 */
+    
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
+}
+
+/* 메뉴 링크 기본 스타일 */
+.nav-menu a {
+    color: #aaa; /* 활성화되지 않은 메뉴는 살짝 흐리게 */
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+    display: inline-block;
+}
+
+/* 메뉴 마우스 오버 및 현재 페이지 활성화(active) 스타일 */
+.nav-menu a:hover,
+.nav-menu a.active {
+    color: #fff;
+}
+
+.nav-menu a.active {
+    border-bottom: 2px solid #fff;
+    padding-bottom: 4px;
+}
+
+/* 5. [인터랙션] 스크롤이 내려갔을 때 (.scrolled 클래스 활성화) */
+
+/* 네비게이션 메뉴가 부드럽게 내려오며 중앙에 표시됨 */
+.main-header.scrolled .nav-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0); /* 제자리인 중앙으로 복귀 */
+}
+
+/* 6. 영상 배경 설정 */
+.video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1; /* 헤더 및 콘텐츠보다 뒤로 배치 */
+    overflow: hidden;
+}
+
+#scroll-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 화면 비율에 맞춰 꽉 차게 조절 */
+}
+
+/* 7. 콘텐츠 영역 및 가상 스크롤 공간 */
+.scroll-space {
+    height: 100vh; /* 각 페이지 공간을 화면 높이만큼 확보 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* 영상 위에 반투명하게 올라가는 글상자 */
+.info-box {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    backdrop-filter: blur(8px); /* 배경 흐림 효과 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 600px;
+    width: 90%;
+}
+
+.info-box h2 {
+    font-size: 32px;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.info-box p {
+    font-size: 16px;
+    color: #ccc;
+    line-height: 1.6;
+}

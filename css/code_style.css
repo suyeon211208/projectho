@@ -1,0 +1,82 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Pretendard', sans-serif;
+    background-color: #ffffff;
+    color: #0f172a; 
+    letter-spacing: -0.03em;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+/* =============================================================
+   ★ 상단 고정 헤더 영역 (About 페이지 동기화)
+   ============================================================= */
+.main-header {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 40px;
+    z-index: 10000;
+    background: rgba(255, 255, 255, 0.85); 
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.logo-link {
+    text-decoration: none;
+    display: inline-block;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0f172a; 
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 40px;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0); 
+}
+
+.nav-menu a {
+    color: #64748b; 
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600; 
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active {
+    color: #0f172a; 
+}
+
+.nav-menu a.active {
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 4px;
+}
+
+.container { max-width: 1000px; margin: 0 auto; text-align: center;
+    padding: 160px 20px 100px 20px; }
+h1 { font-size: 2.5rem; margin-bottom: 30px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; text-align: left; }
+.card { cursor: pointer; transition: transform 0.3s; }
+.thumbnail { width: 100%; height: 250px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 15px; }
+.card h2 { font-size: 1.1rem; margin: 10px 0; }
+.card p { color: #666; font-size: 0.9rem; line-height: 1.4; }
+.meta { font-size: 0.8rem; color: #aaa; margin-top: 10px; display: flex; justify-content: space-between; }

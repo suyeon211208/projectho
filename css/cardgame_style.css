@@ -1,0 +1,56 @@
+body { 
+    margin: 0; padding: 20px; font-family: 'Gamja Flower', cursive; 
+    /* 여기서 배경 이미지를 설정합니다 */
+    background-image: url('https://images.unsplash.com/photo-1506477331477-33d5d8b3dc85?q=80&w=2074&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh; display: flex; justify-content: center; overflow: hidden; 
+}
+
+#ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+
+.ripple {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: ripple-animation 3s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    0% { transform: scale(0); opacity: 0.6; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+#game-container { 
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); 
+    padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+    text-align: center; width: 100%; max-width: 600px; z-index: 1; 
+}
+
+#card-board { display: grid; gap: 15px; margin: 20px auto; perspective: 1000px; }
+
+.card { 
+    width: 100%; aspect-ratio: 9 / 16; position: relative; 
+    transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+    cursor: pointer; 
+}
+.card.is-flipped { transform: rotateY(180deg); }
+
+.card-face { 
+    position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+    display: flex; justify-content: center; align-items: center; 
+    border-radius: 15px; font-size: 35px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+    border: 2px solid #fff;
+}
+.card-back { background-color: #81d4fa; background-image: radial-gradient(#fff 15%, transparent 15%); background-size: 15px 15px; }
+.card-front { background-color: #fff; transform: rotateY(180deg); }
+.card.hidden { visibility: hidden; opacity: 0; transition: opacity 0.5s; }
+#close-btn {
+    position: fixed; top: 20px; left: 20px; /* 왼쪽 상단으로 이동하여 우측 상단 기록 버튼과 분리 */
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #ff5252; border: none; color: white;
+    font-size: 24px; cursor: pointer; z-index: 100;
+    display: flex; justify-content: center; align-items: center;
+}
