@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지뢰 찾기 - 100단계</title>
+<style>
+:root {
+  --bg: #c0c0c0;
+  --border-light: #ffffff;
+  --border-dark: #7b7b7b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #008080;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 16px;
+}
+
+.game-container {
+  background: var(--bg);
+  padding: 12px;
+  border: 6px outset var(--bg);
+  box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.5);
+  max-width: 96vw;
+}
+
+.title {
+  text-align: center;
+  margin: 4px 0 2px;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: #222;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.rule-text {
+  text-align: center;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #333;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border: 4px inset var(--bg);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.label-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2px;
+  letter-spacing: 1px;
+}
+
+.counter {
+  background: #000;
+  color: #ff2b2b;
+  font-weight: bold;
+  font-size: 22px;
+  padding: 2px 10px;
+  border: 2px inset #444;
+  min-width: 64px;
+  text-align: center;
+  letter-spacing: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+.smiley {
+  width: 42px;
+  height: 42px;
+  font-size: 20px;
+  background: var(--bg);
+  border: 3px outset var(--bg);
+  cursor: pointer;
+}
+
+.smiley:active {
+  border-style: inset;
+}
+
+.message {
+  text-align: center;
+  min-height: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #b00000;
+  margin-bottom: 8px;
+}
+
+.board-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.board {
+  display: grid;
+  gap: 2px;
+  background: var(--border-dark);
+  border: 4px inset var(--bg);
+  padding: 4px;
+}
+
+.cell {
+  background: var(--bg);
+  border: 2px outset var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  user-select: none;
+  transition: filter 0.05s ease;
+}
+
+.cell:hover:not(.revealed) {
+  filter: brightness(1.08);
+}
+
+.cell.revealed {
+  border: 1px solid var(--border-dark);
+  cursor: default;
+}
+
+.cell.mine-found {
+  background: #e8e8e8;
+  border: 1px solid var(--border-dark);
+}
+
+.cell.mine-exploded-safe {
+  background: #ff4d4d;
+  border: 2px inset #ff4d4d;
+}
+
+.cell.mine-revealed-other {
+  background: #e6e6e6;
+  border: 1px solid var(--border-dark);
+}
+</style>
+</head>
+<body>
+  <div class="game-container">
+    <h1 class="title">💣 지뢰 찾기 챌린지 💣</h1>
+    <p class="rule-text">지뢰를 피해서 안전한 칸을 모두 열면 다음 단계로! 지뢰를 5번 밟으면 게임 오버!</p>
+
+    <div class="header">
+      <div class="label-box">
+        <span class="label">LEVEL</span>
+        <div class="counter" id="level-counter">001</div>
+      </div>
+
+      <button class="smiley" id="smiley-btn" title="다시 시작">🙂</button>
+
+      <div class="label-box">
+        <span class="label">MISS</span>
+        <div class="counter" id="mine-counter">0/5</div>
+      </div>
+    </div>
+
+    <div class="message" id="message">&nbsp;</div>
+
+    <div class="board-wrapper">
+      <div class="board" id="board"></div>
+    </div>
+  </div>
+
+<script>
+// ===== 게임 설정 =====
+const BASE_CELLS = 25;       // 1단계 기본 칸 수
+const CELLS_PER_LEVEL = 2;   // 단계마다 늘어나는 칸 수 (2의 배수 증가)
+const MAX_LEVEL = 100;       // 최대 단계
+const MINE_COUNT = 5;        // 단계당 지뢰 개수
+
+// ===== DOM =====
+const boardEl = document.getElementById('board');
+const levelCounterEl = document.getElementById('level-counter');
+const mineCounterEl = document.getElementById('mine-counter');
+const smileyBtn = document.getElementById('smiley-btn');
+const messageEl = document.getElementById('message');
+
+// ===== 상태 =====
+let level = 1;
+let missCount = 0;        // 지뢰를 밟은 횟수 (5번 되면 게임 오버)
+let safeRevealed = 0;     // 안전한 칸을 연 개수
+let mines = new Set();
+let revealed = new Set();
+let gameOver = false;
+let columns = 0;
+let rows = 0;
+let totalCells = 0;
+
+function initLevel() {
+  gameOver = false;
+  missCount = 0;
+  safeRevealed = 0;
+  revealed = new Set();
+  messageEl.innerHTML = '&nbsp;';
+  smileyBtn.textContent = '🙂';
+
+  // 단계별 칸 수 계산 (2씩 증가)
+  totalCells = BASE_CELLS + (level - 1) * CELLS_PER_LEVEL;
+  columns = Math.ceil(Math.sqrt(totalCells));
+  rows = Math.ceil(totalCells / columns);
+  totalCells = columns * rows;
+
+  // 지뢰 배치
+  mines = new Set();
+  while (mines.size < MINE_COUNT) {
+    mines.add(Math.floor(Math.random() * totalCells));
+  }
+
+  render();
+  updateCounters();
+}
+
+function render() {
+  boardEl.innerHTML = '';
+
+  // 화면 크기에 맞춰 셀 크기 조정
+  const maxBoardWidth = Math.min(window.innerWidth * 0.9, 640);
+  const cellSize = Math.max(14, Math.min(32, Math.floor(maxBoardWidth / columns)));
+
+  boardEl.style.gridTemplateColumns = `repeat(${columns}, ${cellSize}px)`;
+
+  for (let i = 0; i < totalCells; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.style.width = cellSize + 'px';
+    cell.style.height = cellSize + 'px';
+    cell.style.fontSize = Math.max(10, cellSize - 8) + 'px';
+    cell.dataset.index = i;
+    cell.addEventListener('click', onCellClick);
+    boardEl.appendChild(cell);
+  }
+}
+
+function updateCounters() {
+  levelCounterEl.textContent = String(level).padStart(3, '0');
+  mineCounterEl.textContent = `${missCount}/${MINE_COUNT}`;
+}
+
+function onCellClick(e) {
+  if (gameOver) return;
+
+  const idx = Number(e.currentTarget.dataset.index);
+  if (revealed.has(idx)) return;
+
+  revealed.add(idx);
+  const cellEl = e.currentTarget;
+  cellEl.classList.add('revealed');
+
+  if (mines.has(idx)) {
+    // 지뢰를 밟음 -> 실수 카운트 증가, 게임은 계속 진행
+    missCount++;
+    cellEl.classList.add('mine-exploded-safe');
+    cellEl.textContent = '💥';
+    updateCounters();
+
+    if (missCount >= MINE_COUNT) {
+      triggerGameOver();
+    }
+  } else {
+    // 안전한 칸 -> 진행 (열린 칸으로 표시)
+    safeRevealed++;
+    cellEl.classList.add('mine-found');
+    cellEl.textContent = '';
+
+    const safeTotal = totalCells - MINE_COUNT;
+    if (safeRevealed >= safeTotal) {
+      levelClear();
+    }
+  }
+}
+
+function levelClear() {
+  gameOver = true;
+  smileyBtn.textContent = '😎';
+
+  if (level >= MAX_LEVEL) {
+    messageEl.textContent = '🎉 축하합니다! 100단계를 모두 클리어했습니다! 🎉';
+    disableBoard();
+    return;
+  }
+
+  messageEl.textContent = `레벨 ${level} 클리어! 다음 단계로 이동합니다...`;
+  disableBoard();
+
+  setTimeout(() => {
+    level++;
+    initLevel();
+  }, 1100);
+}
+
+function triggerGameOver() {
+  gameOver = true;
+  smileyBtn.textContent = '😵';
+  messageEl.textContent = `GAME OVER — 레벨 ${level}에서 지뢰를 ${MINE_COUNT}번 밟았습니다.`;
+
+  // 남은 지뢰 모두 표시
+  [...boardEl.children].forEach((el, idx) => {
+    if (mines.has(idx) && !revealed.has(idx)) {
+      el.classList.add('mine-revealed-other');
+      el.textContent = '💣';
+    }
+  });
+
+  disableBoard();
+}
+
+function disableBoard() {
+  [...boardEl.children].forEach((c) => c.classList.add('revealed'));
+}
+
+smileyBtn.addEventListener('click', () => {
+  level = 1;
+  initLevel();
+});
+
+window.addEventListener('resize', () => {
+  if (!gameOver) render();
+});
+
+// 시작
+initLevel();
+</script>
+</body>
+</html>
