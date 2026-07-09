@@ -9,6 +9,9 @@
   --bg: #c0c0c0;
   --border-light: #ffffff;
   --border-dark: #7b7b7b;
+  --key-face: #fff6da;
+  --key-face-dark: #f0dfa6;
+  --key-shadow: #c9a962;
 }
 
 * {
@@ -21,16 +24,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #008080;
+  background: radial-gradient(ellipse at top, #f3e2b3 0%, #d8bd7d 70%);
   font-family: 'Courier New', Courier, monospace;
   padding: 16px;
 }
 
 .game-container {
-  background: var(--bg);
-  padding: 12px;
-  border: 6px outset var(--bg);
-  box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(160deg, #f0dfa8 0%, #d3b170 100%);
+  padding: 16px;
+  border: 3px solid #8a6d3b;
+  border-radius: 16px;
+  box-shadow: 0 14px 28px rgba(90, 65, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   max-width: 96vw;
 }
 
@@ -39,25 +43,27 @@ body {
   margin: 4px 0 2px;
   font-size: 22px;
   letter-spacing: 1px;
-  color: #222;
-  text-shadow: 1px 1px 0 #fff;
+  color: #4a3b1f;
+  text-shadow: 0 1px 0 #fff8e1, 0 0 8px rgba(255, 214, 110, 0.4);
 }
 
 .rule-text {
   text-align: center;
   margin: 0 0 10px;
   font-size: 12px;
-  color: #333;
+  color: #6b5a35;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg);
-  border: 4px inset var(--bg);
+  background: #4a3b1f;
+  border: 1px solid #2e2410;
+  border-radius: 10px;
   padding: 8px 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .label-box {
@@ -69,35 +75,46 @@ body {
 .label {
   font-size: 10px;
   font-weight: bold;
-  color: #333;
+  color: #d8bd7d;
   margin-bottom: 2px;
   letter-spacing: 1px;
 }
 
 .counter {
-  background: #000;
-  color: #ff2b2b;
+  background: #2b210f;
+  color: #ffd54f;
   font-weight: bold;
-  font-size: 22px;
-  padding: 2px 10px;
-  border: 2px inset #444;
-  min-width: 64px;
+  font-size: 18px;
+  padding: 2px 8px;
+  border: 2px solid #6b5a35;
+  border-radius: 4px;
+  min-width: 46px;
   text-align: center;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   font-family: 'Courier New', monospace;
+  text-shadow: 0 0 6px rgba(255, 213, 79, 0.6);
+}
+
+.header {
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 
 .smiley {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   font-size: 20px;
-  background: var(--bg);
-  border: 3px outset var(--bg);
+  background: linear-gradient(180deg, var(--key-face) 0%, var(--key-face-dark) 100%);
+  border: 1px solid #b7965a;
+  border-radius: 8px;
+  box-shadow: 0 3px 0 var(--key-shadow), 0 5px 6px rgba(90, 65, 20, 0.4);
   cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.05s ease;
 }
 
 .smiley:active {
-  border-style: inset;
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--key-shadow), 0 1px 2px rgba(90, 65, 20, 0.4);
 }
 
 .message {
@@ -105,8 +122,9 @@ body {
   min-height: 20px;
   font-weight: bold;
   font-size: 14px;
-  color: #b00000;
+  color: #a8451a;
   margin-bottom: 8px;
+  text-shadow: 0 0 6px rgba(255, 152, 0, 0.3);
 }
 
 .board-wrapper {
@@ -116,46 +134,67 @@ body {
 
 .board {
   display: grid;
-  gap: 2px;
-  background: var(--border-dark);
-  border: 4px inset var(--bg);
-  padding: 4px;
+  gap: 6px;
+  background: #4a3b1f;
+  border: 1px solid #2e2410;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(255, 255, 255, 0.08);
 }
 
 .cell {
-  background: var(--bg);
-  border: 2px outset var(--bg);
+  background: linear-gradient(180deg, var(--key-face) 0%, var(--key-face-dark) 100%);
+  border: 1px solid #b7965a;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-weight: bold;
+  font-family: 'Courier New', Courier, monospace;
   user-select: none;
-  transition: filter 0.05s ease;
+  touch-action: none;
+  box-shadow: 0 3px 0 var(--key-shadow), 0 5px 5px rgba(90, 65, 20, 0.35);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.1s ease;
 }
 
 .cell:hover:not(.revealed) {
-  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--key-shadow), 0 7px 8px rgba(90, 65, 20, 0.4);
+}
+
+.cell:active:not(.revealed) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--key-shadow), 0 2px 3px rgba(90, 65, 20, 0.35);
 }
 
 .cell.revealed {
-  border: 1px solid var(--border-dark);
-  cursor: default;
+  background: linear-gradient(180deg, #ecd9a4 0%, #dcc383 100%);
+  border: 1px solid #a3813f;
+  box-shadow: inset 0 2px 4px rgba(90, 65, 20, 0.3);
+  transform: translateY(2px);
+  cursor: pointer;
 }
 
 .cell.mine-found {
-  background: #e8e8e8;
-  border: 1px solid var(--border-dark);
+  background: linear-gradient(180deg, #ecd9a4 0%, #dcc383 100%);
 }
 
 .cell.mine-exploded-safe {
-  background: #ff4d4d;
-  border: 2px inset #ff4d4d;
+  background: linear-gradient(180deg, #ffd54f 0%, #ffb300 100%);
+  border: 1px solid #d18f00;
+  box-shadow: inset 0 2px 4px rgba(90, 65, 20, 0.3);
 }
 
 .cell.mine-revealed-other {
-  background: #e6e6e6;
-  border: 1px solid var(--border-dark);
+  background: linear-gradient(180deg, #f5e8c2 0%, #e3cd97 100%);
+  border: 1px solid #b7965a;
+  box-shadow: inset 0 2px 4px rgba(90, 65, 20, 0.25);
+}
+
+.cell.flagged {
+  background: linear-gradient(180deg, #fff1c9 0%, #f2dc9a 100%);
+  border: 1px solid #c0392b;
 }
 
 .cell.n1 { color: #0000ff; }
@@ -168,22 +207,27 @@ body {
 .cell.n8 { color: #808080; }
 
 .cell.highlight {
-  outline: 3px solid #ffcc00;
+  outline: 3px solid #e65100;
   outline-offset: -3px;
-  box-shadow: 0 0 8px 2px rgba(255, 204, 0, 0.9);
+  box-shadow: 0 0 8px 2px rgba(230, 81, 0, 0.8);
   z-index: 2;
 }
 </style>
 </head>
 <body>
   <div class="game-container">
-    <h1 class="title">💣 지뢰 찾기 챌린지 💣</h1>
-    <p class="rule-text">숫자는 주변 8칸에 숨은 지뢰 개수! 지뢰를 피해서 안전한 칸을 모두 열면 다음 단계로! 지뢰를 5번 밟으면 게임 오버!</p>
+    <h1 class="title">🦆 지뢰 찾기 챌린지 🦆</h1>
+    <p class="rule-text">단계가 오를수록 지뢰가 늘어나요! 숫자는 주변 8칸의 지뢰 개수, 길게 누르면 🚩 깃발 표시</p>
 
     <div class="header">
       <div class="label-box">
         <span class="label">LEVEL</span>
         <div class="counter" id="level-counter">001</div>
+      </div>
+
+      <div class="label-box">
+        <span class="label">MINES</span>
+        <div class="counter" id="mines-total-counter">5</div>
       </div>
 
       <button class="smiley" id="smiley-btn" title="다시 시작">🙂</button>
@@ -206,11 +250,14 @@ body {
 const BASE_CELLS = 25;       // 1단계 기본 칸 수
 const CELLS_PER_LEVEL = 2;   // 단계마다 늘어나는 칸 수 (2의 배수 증가)
 const MAX_LEVEL = 100;       // 최대 단계
-const MINE_COUNT = 5;        // 단계당 지뢰 개수
+const BASE_MINE_COUNT = 5;   // 1단계 기본 지뢰 개수
+const LEVELS_PER_MINE_STEP = 5; // 이 단계 수마다 지뢰가 1개씩 늘어남
+const MAX_MISSES = 5;        // 실수(지뢰 밟기) 허용 횟수는 항상 고정
 
 // ===== DOM =====
 const boardEl = document.getElementById('board');
 const levelCounterEl = document.getElementById('level-counter');
+const minesTotalCounterEl = document.getElementById('mines-total-counter');
 const mineCounterEl = document.getElementById('mine-counter');
 const smileyBtn = document.getElementById('smiley-btn');
 const messageEl = document.getElementById('message');
@@ -221,16 +268,19 @@ let missCount = 0;        // 지뢰를 밟은 횟수 (5번 되면 게임 오버)
 let safeRevealed = 0;     // 안전한 칸을 연 개수
 let mines = new Set();
 let revealed = new Set();
+let flags = new Set();    // 깃발 표시된 칸
 let gameOver = false;
 let columns = 0;
 let rows = 0;
 let totalCells = 0;
+let currentMineCount = BASE_MINE_COUNT; // 이번 단계의 지뢰 개수
 
 function initLevel() {
   gameOver = false;
   missCount = 0;
   safeRevealed = 0;
   revealed = new Set();
+  flags = new Set();
   messageEl.innerHTML = '&nbsp;';
   smileyBtn.textContent = '🙂';
 
@@ -240,9 +290,14 @@ function initLevel() {
   rows = Math.ceil(totalCells / columns);
   totalCells = columns * rows;
 
+  // 단계가 오를수록 지뢰 개수 증가 (LEVELS_PER_MINE_STEP 단계마다 +1)
+  currentMineCount = BASE_MINE_COUNT + Math.floor((level - 1) / LEVELS_PER_MINE_STEP);
+  // 안전 칸이 최소 몇 개는 남도록 상한 적용
+  currentMineCount = Math.min(currentMineCount, Math.floor(totalCells * 0.4));
+
   // 지뢰 배치
   mines = new Set();
-  while (mines.size < MINE_COUNT) {
+  while (mines.size < currentMineCount) {
     mines.add(Math.floor(Math.random() * totalCells));
   }
 
@@ -267,13 +322,21 @@ function render() {
     cell.style.fontSize = Math.max(10, cellSize - 8) + 'px';
     cell.dataset.index = i;
     cell.addEventListener('click', onCellClick);
+    cell.addEventListener('pointerdown', onCellPointerDown);
+    cell.addEventListener('pointerup', onCellPointerUp);
+    cell.addEventListener('pointerleave', onCellPointerUp);
+    cell.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      toggleFlag(Number(e.currentTarget.dataset.index));
+    });
     boardEl.appendChild(cell);
   }
 }
 
 function updateCounters() {
   levelCounterEl.textContent = String(level).padStart(3, '0');
-  mineCounterEl.textContent = `${missCount}/${MINE_COUNT}`;
+  minesTotalCounterEl.textContent = currentMineCount;
+  mineCounterEl.textContent = `${missCount}/${MAX_MISSES}`;
 }
 
 function getNeighbors(idx) {
@@ -344,10 +407,60 @@ function highlightNeighbors(idx) {
   }, 800);
 }
 
-function onCellClick(e) {
+const LONG_PRESS_MS = 450;
+let pressTimer = null;
+let longPressTriggered = false;
+
+function onCellPointerDown(e) {
   if (gameOver) return;
 
   const idx = Number(e.currentTarget.dataset.index);
+  if (revealed.has(idx)) return;
+
+  longPressTriggered = false;
+  clearTimeout(pressTimer);
+
+  pressTimer = setTimeout(() => {
+    longPressTriggered = true;
+    toggleFlag(idx);
+  }, LONG_PRESS_MS);
+}
+
+function onCellPointerUp() {
+  clearTimeout(pressTimer);
+}
+
+function toggleFlag(idx) {
+  if (gameOver || revealed.has(idx)) return;
+
+  const cellEl = boardEl.children[idx];
+
+  if (flags.has(idx)) {
+    flags.delete(idx);
+    cellEl.classList.remove('flagged');
+    cellEl.textContent = '';
+  } else {
+    flags.add(idx);
+    cellEl.classList.add('flagged');
+    cellEl.textContent = '🚩';
+  }
+}
+
+function onCellClick(e) {
+  if (gameOver) return;
+
+  if (longPressTriggered) {
+    // 길게 눌러 플래그를 방금 토글한 경우, 뒤이어 발생하는 클릭(오픈)은 무시
+    longPressTriggered = false;
+    return;
+  }
+
+  const idx = Number(e.currentTarget.dataset.index);
+
+  if (flags.has(idx)) {
+    // 플래그가 꽂힌 칸은 일반 클릭으로 열리지 않음 (길게 눌러야 해제됨)
+    return;
+  }
 
   if (revealed.has(idx)) {
     // 이미 열린 안전한 칸(숫자 포함)을 다시 클릭하면 해당 숫자가 세는 주변 영역을 표시
@@ -363,17 +476,17 @@ function onCellClick(e) {
     missCount++;
     const cellEl = e.currentTarget;
     cellEl.classList.add('revealed', 'mine-exploded-safe');
-    cellEl.textContent = '💥';
+    cellEl.textContent = '🦆';
     updateCounters();
 
-    if (missCount >= MINE_COUNT) {
+    if (missCount >= MAX_MISSES) {
       triggerGameOver();
     }
   } else {
     // 안전한 칸 -> 진행 (숫자 힌트 표시, 0이면 주변 자동 오픈)
     revealCell(idx);
 
-    const safeTotal = totalCells - MINE_COUNT;
+    const safeTotal = totalCells - currentMineCount;
     if (safeRevealed >= safeTotal) {
       levelClear();
     }
@@ -402,13 +515,13 @@ function levelClear() {
 function triggerGameOver() {
   gameOver = true;
   smileyBtn.textContent = '😵';
-  messageEl.textContent = `GAME OVER — 레벨 ${level}에서 지뢰를 ${MINE_COUNT}번 밟았습니다.`;
+  messageEl.textContent = `GAME OVER — 레벨 ${level}에서 지뢰를 ${MAX_MISSES}번 밟았습니다.`;
 
   // 남은 지뢰 모두 표시
   [...boardEl.children].forEach((el, idx) => {
     if (mines.has(idx) && !revealed.has(idx)) {
       el.classList.add('mine-revealed-other');
-      el.textContent = '💣';
+      el.textContent = '🦆';
     }
   });
 
