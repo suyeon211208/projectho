@@ -1,10 +1,8 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.gallery-card');
     const modalContent = document.querySelector('.modal-content');
     const particleContainer = document.getElementById('particle-container');
     const titleElement = document.getElementById('gallery-title');
-
     /* =============================================================
        2. [About 동일 효과] 타이틀 스플릿 문자 호버 업 모션
        ============================================================= */
@@ -19,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
             span.addEventListener('mouseleave', () => { setTimeout(() => span.classList.remove('hovered'), 200); });
         });
     }
-
     /* =============================================================
        3. 갤러리 고유 효과: 카드 마우스 3D 자석 틸트(기울임)
        ============================================================= */
@@ -39,6 +36,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+/* =============================================================
+   data-content 속성 안에 실제 줄바꿈(엔터)이 그대로 들어있으면
+   JSON.parse가 "Bad control character in string literal" 에러를
+   내기 때문에, 파싱 전에 문자열 리터럴 내부의 제어문자만
+   안전하게 \n, \r, \t 로 이스케이프 처리한다.
+   (문자열 바깥의 JSON 구조는 건드리지 않는다)
+   ============================================================= */
+function sanitizeJSONString(str) {
+    let result = '';
+    let inString = false;
+    let escaped = false;
+
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+
+        if (escaped) {
+            result += char;
+            escaped = false;
+            continue;
+        }
+
+        if (char === '\\') {
+            result += char;
+            escaped = true;
+            continue;
+        }
+
+        if (char === '"') {
+            inString = !inString;
+            result += char;
+            continue;
+        }
+
+        if (inString) {
+            if (char === '\n') { result += '\\n'; continue; }
+            if (char === '\r') { result += '\\r'; continue; }
+            if (char === '\t') { result += '\\t'; continue; }
+        }
+
+        result += char;
+    }
+
+    return result;
+}
+
 window.openStoryModal = function(element) {
     const modal = document.getElementById('story-modal');
     const bodyText = document.getElementById('modal-body-text');
@@ -46,7 +89,8 @@ window.openStoryModal = function(element) {
     try {
         const title = element.getAttribute('data-title');
         const date = element.getAttribute('data-date');
-        const contentBlocks = JSON.parse(element.getAttribute('data-content'));
+        const rawContent = element.getAttribute('data-content');
+        const contentBlocks = JSON.parse(sanitizeJSONString(rawContent));
         
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-date').innerText = date;
@@ -69,14 +113,12 @@ window.openStoryModal = function(element) {
         console.error("데이터 파싱 에러:", e);
     }
 };
-
 window.closeModal = function(e) {
     if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
         document.getElementById('story-modal').classList.remove('active');
         document.body.style.overflow = 'auto';
     }
 };
-
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.story-card').forEach(card => {
         card.addEventListener('click', function() {
