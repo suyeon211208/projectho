@@ -2,434 +2,657 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>지뢰 찾기 - 100단계</title>
+<title>Particle Assembly</title>
 <style>
-:root {
-  --bg: #c0c0c0;
-  --border-light: #ffffff;
-  --border-dark: #7b7b7b;
-}
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #07070b;
+    overflow: hidden;
+    font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+    color: #d8d8e4;
+  }
+  #stage { position: fixed; inset: 0; }
+  canvas { display: block; width: 100%; height: 100%; }
 
-* {
-  box-sizing: border-box;
-}
+  #vignette {
+    position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(7,7,11,0) 45%, rgba(7,7,11,0.85) 100%);
+  }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #008080;
-  font-family: 'Courier New', Courier, monospace;
-  padding: 16px;
-}
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 26px 30px;
+    pointer-events: none;
+  }
+  #hud .brand {
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #6d6d82;
+  }
+  #hud .brand b { color: #b9b9d4; font-weight: 500; }
+  #hud .stats {
+    text-align: right; font-size: 11px; letter-spacing: 0.05em; color: #55556a;
+    line-height: 1.6;
+  }
+  #hud .stats span { color: #9c9cc4; }
 
-.game-container {
-  background: var(--bg);
-  padding: 12px;
-  border: 6px outset var(--bg);
-  box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.5);
-  max-width: 96vw;
-}
+  /* ---------- bottom dock ---------- */
+  #dock {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px;
+    max-width: min(880px, 92vw);
+    padding: 10px 10px;
+    background: rgba(14,14,20,0.62);
+    border: 1px solid #24243a;
+    border-radius: 4px;
+    backdrop-filter: blur(10px);
+  }
 
-.title {
-  text-align: center;
-  margin: 4px 0 2px;
-  font-size: 22px;
-  letter-spacing: 1px;
-  color: #222;
-  text-shadow: 1px 1px 0 #fff;
-}
+  #tray {
+    display: flex; align-items: center; gap: 8px;
+    overflow-x: auto;
+    max-width: 640px;
+    padding: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: #33334a transparent;
+  }
+  #tray::-webkit-scrollbar { height: 5px; }
+  #tray::-webkit-scrollbar-thumb { background: #2c2c42; border-radius: 3px; }
 
-.rule-text {
-  text-align: center;
-  margin: 0 0 10px;
-  font-size: 12px;
-  color: #333;
-}
+  .thumb {
+    position: relative;
+    flex: 0 0 auto;
+    width: 52px; height: 52px;
+    border-radius: 3px;
+    border: 1px solid #2c2c42;
+    background-color: #101018;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  }
+  .thumb:hover { border-color: #57577a; transform: translateY(-1px); }
+  .thumb.active {
+    border-color: #7c5cff;
+    box-shadow: 0 0 0 1px #7c5cff, 0 0 16px rgba(124,92,255,0.35);
+  }
+  .thumb .rm {
+    position: absolute; top: -6px; right: -6px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #1a1a26; border: 1px solid #3a3a52;
+    color: #8a8ab0; font-size: 10px; line-height: 14px; text-align: center;
+    opacity: 0; transition: opacity 0.15s ease;
+  }
+  .thumb:hover .rm { opacity: 1; }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg);
-  border: 4px inset var(--bg);
-  padding: 8px 12px;
-  margin-bottom: 8px;
-}
+  #addBtn {
+    flex: 0 0 auto;
+    width: 52px; height: 52px;
+    border-radius: 3px;
+    border: 1px dashed #3a3a52;
+    background: transparent;
+    color: #6d6d85;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  #addBtn:hover { border-color: #7c5cff; color: #b9a8ff; }
 
-.label-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  #textAddWrap {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 6px;
+  }
+  #textInput {
+    width: 108px;
+    height: 52px;
+    padding: 0 10px;
+    background: #101018;
+    border: 1px solid #2c2c42;
+    border-radius: 3px;
+    color: #d8d8e4;
+    font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  #textInput::placeholder { color: #4a4a5e; }
+  #textInput:focus { border-color: #7c5cff; }
+  #textAddBtn {
+    flex: 0 0 auto;
+    width: 40px; height: 52px;
+    border-radius: 3px;
+    border: 1px dashed #3a3a52;
+    background: transparent;
+    color: #6d6d85;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  #textAddBtn:hover { border-color: #7c5cff; color: #b9a8ff; }
 
-.label {
-  font-size: 10px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 2px;
-  letter-spacing: 1px;
-}
+  #rotateBtn {
+    flex: 0 0 auto;
+    width: 40px; height: 40px;
+    border-radius: 3px;
+    border: 1px solid #2c2c42;
+    background: transparent;
+    color: #74748c;
+    font-size: 17px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  }
+  #rotateBtn:hover { border-color: #57577a; color: #cfcfe6; }
+  #rotateBtn.active {
+    border-color: #7c5cff; color: #f4f2ff; background: rgba(124,92,255,0.18);
+  }
 
-.counter {
-  background: #000;
-  color: #ff2b2b;
-  font-weight: bold;
-  font-size: 22px;
-  padding: 2px 10px;
-  border: 2px inset #444;
-  min-width: 64px;
-  text-align: center;
-  letter-spacing: 3px;
-  font-family: 'Courier New', monospace;
-}
+  #divider { width: 1px; align-self: stretch; background: #24243a; margin: 2px 2px; }
 
-.smiley {
-  width: 42px;
-  height: 42px;
-  font-size: 20px;
-  background: var(--bg);
-  border: 3px outset var(--bg);
-  cursor: pointer;
-}
+  #densityWrap {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    font-size: 9.5px; color: #55556a; letter-spacing: 0.08em;
+    padding: 0 8px;
+  }
+  #density {
+    -webkit-appearance: none; appearance: none;
+    width: 74px; height: 2px; background: #2c2c42; outline: none;
+  }
+  #density::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 9px; height: 9px; border-radius: 50%;
+    background: #cfcfe6; cursor: pointer;
+  }
 
-.smiley:active {
-  border-style: inset;
-}
+  #fileinput { display: none; }
 
-.message {
-  text-align: center;
-  min-height: 20px;
-  font-weight: bold;
-  font-size: 14px;
-  color: #b00000;
-  margin-bottom: 8px;
-}
+  #toast {
+    position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%) translateY(6px);
+    font-size: 11.5px; letter-spacing: 0.03em; color: #d8d8e4;
+    background: rgba(20,20,30,0.9);
+    border: 1px solid #3a3a52;
+    padding: 10px 16px;
+    border-radius: 3px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    max-width: 340px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-.board-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.board {
-  display: grid;
-  gap: 2px;
-  background: var(--border-dark);
-  border: 4px inset var(--bg);
-  padding: 4px;
-}
-
-.cell {
-  background: var(--bg);
-  border: 2px outset var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-weight: bold;
-  user-select: none;
-  transition: filter 0.05s ease;
-}
-
-.cell:hover:not(.revealed) {
-  filter: brightness(1.08);
-}
-
-.cell.revealed {
-  border: 1px solid var(--border-dark);
-  cursor: default;
-}
-
-.cell.mine-found {
-  background: #e8e8e8;
-  border: 1px solid var(--border-dark);
-}
-
-.cell.mine-exploded-safe {
-  background: #ff4d4d;
-  border: 2px inset #ff4d4d;
-}
-
-.cell.mine-revealed-other {
-  background: #e6e6e6;
-  border: 1px solid var(--border-dark);
-}
-
-.cell.n1 { color: #0000ff; }
-.cell.n2 { color: #008000; }
-.cell.n3 { color: #ff0000; }
-.cell.n4 { color: #000080; }
-.cell.n5 { color: #800000; }
-.cell.n6 { color: #008080; }
-.cell.n7 { color: #000000; }
-.cell.n8 { color: #808080; }
-
-.cell.highlight {
-  outline: 3px solid #ffcc00;
-  outline-offset: -3px;
-  box-shadow: 0 0 8px 2px rgba(255, 204, 0, 0.9);
-  z-index: 2;
-}
+  #hint {
+    position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; letter-spacing: 0.08em; color: #40405a;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
-  <div class="game-container">
-    <h1 class="title">💣 지뢰 찾기 챌린지 💣</h1>
-    <p class="rule-text">숫자는 주변 8칸에 숨은 지뢰 개수! 지뢰를 피해서 안전한 칸을 모두 열면 다음 단계로! 지뢰를 5번 밟으면 게임 오버!</p>
 
-    <div class="header">
-      <div class="label-box">
-        <span class="label">LEVEL</span>
-        <div class="counter" id="level-counter">001</div>
-      </div>
+<div id="stage"><canvas id="canvas"></canvas></div>
+<div id="vignette"></div>
 
-      <button class="smiley" id="smiley-btn" title="다시 시작">🙂</button>
+<div id="hud">
+  <div class="brand"><b>Particle</b> · Assembly</div>
+  <div class="stats">SHAPE <span id="statFile">—</span><br>PARTICLES <span id="statCount">0</span></div>
+</div>
 
-      <div class="label-box">
-        <span class="label">MISS</span>
-        <div class="counter" id="mine-counter">0/5</div>
-      </div>
-    </div>
+<div id="hint">R 회전 · ← → ↑ ↓ 이동 · Space 모으기/흩어지기</div>
+<div id="toast"></div>
 
-    <div class="message" id="message">&nbsp;</div>
-
-    <div class="board-wrapper">
-      <div class="board" id="board"></div>
-    </div>
+<div id="dock">
+  <div id="tray"></div>
+  <button id="addBtn" title="이미지 추가">+</button>
+  <div id="textAddWrap">
+    <input type="text" id="textInput" placeholder="텍스트 입력" maxlength="16">
+    <button id="textAddBtn" title="텍스트 추가">Aa</button>
   </div>
+  <div id="divider"></div>
+  <button id="rotateBtn" title="회전 (R)">⟳</button>
+  <div id="densityWrap">
+    밀도
+    <input type="range" id="density" min="1200" max="60000" step="1000" value="18000">
+  </div>
+</div>
+<input type="file" id="fileinput" accept="image/*,.svg" multiple>
 
 <script>
-// ===== 게임 설정 =====
-const BASE_CELLS = 25;       // 1단계 기본 칸 수
-const CELLS_PER_LEVEL = 2;   // 단계마다 늘어나는 칸 수 (2의 배수 증가)
-const MAX_LEVEL = 100;       // 최대 단계
-const MINE_COUNT = 5;        // 단계당 지뢰 개수
+(function(){
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const dock = document.getElementById('dock');
+  const tray = document.getElementById('tray');
+  const addBtn = document.getElementById('addBtn');
+  const textInput = document.getElementById('textInput');
+  const textAddBtn = document.getElementById('textAddBtn');
+  const rotateBtn = document.getElementById('rotateBtn');
+  const fileInput = document.getElementById('fileinput');
+  const densitySlider = document.getElementById('density');
+  const statFile = document.getElementById('statFile');
+  const statCount = document.getElementById('statCount');
+  const toastEl = document.getElementById('toast');
 
-// ===== DOM =====
-const boardEl = document.getElementById('board');
-const levelCounterEl = document.getElementById('level-counter');
-const mineCounterEl = document.getElementById('mine-counter');
-const smileyBtn = document.getElementById('smiley-btn');
-const messageEl = document.getElementById('message');
+  let DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
 
-// ===== 상태 =====
-let level = 1;
-let missCount = 0;        // 지뢰를 밟은 횟수 (5번 되면 게임 오버)
-let safeRevealed = 0;     // 안전한 칸을 연 개수
-let mines = new Set();
-let revealed = new Set();
-let gameOver = false;
-let columns = 0;
-let rows = 0;
-let totalCells = 0;
+  function resize(){
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', ()=>{
+    resize();
+    if(activeShape) computeLayout(activeShape);
+  });
+  resize();
 
-function initLevel() {
-  gameOver = false;
-  missCount = 0;
-  safeRevealed = 0;
-  revealed = new Set();
-  messageEl.innerHTML = '&nbsp;';
-  smileyBtn.textContent = '🙂';
+  let particles = [];
+  let shapes = [];       // {id, name, thumb, rawPoints:[{nx,ny,r,g,b,a}], minX,maxX,minY,maxY}
+  let activeShape = null;
+  let shapeSeq = 0;
+  let animId = null;
+  let toastTimer = null;
 
-  // 단계별 칸 수 계산 (2씩 증가)
-  totalCells = BASE_CELLS + (level - 1) * CELLS_PER_LEVEL;
-  columns = Math.ceil(Math.sqrt(totalCells));
-  rows = Math.ceil(totalCells / columns);
-  totalCells = columns * rows;
+  // rotation / movement state
+  let rotationEnabled = false;
+  let rotationAngle = 0;
+  let rotationSpeed = 0.7;   // rad/sec when auto-rotating
+  let panX = 0, panY = 0;
+  let currentTW = 0, currentTH = 0;
+  let lastFrameT = null;
 
-  // 지뢰 배치
-  mines = new Set();
-  while (mines.size < MINE_COUNT) {
-    mines.add(Math.floor(Math.random() * totalCells));
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toastEl.classList.remove('show'), 3200);
   }
 
-  render();
-  updateCounters();
-}
-
-function render() {
-  boardEl.innerHTML = '';
-
-  // 화면 크기에 맞춰 셀 크기 조정
-  const maxBoardWidth = Math.min(window.innerWidth * 0.9, 640);
-  const cellSize = Math.max(14, Math.min(32, Math.floor(maxBoardWidth / columns)));
-
-  boardEl.style.gridTemplateColumns = `repeat(${columns}, ${cellSize}px)`;
-
-  for (let i = 0; i < totalCells; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    cell.style.width = cellSize + 'px';
-    cell.style.height = cellSize + 'px';
-    cell.style.fontSize = Math.max(10, cellSize - 8) + 'px';
-    cell.dataset.index = i;
-    cell.addEventListener('click', onCellClick);
-    boardEl.appendChild(cell);
+  // ---------- particle pool ----------
+  function neutralColor(){
+    const hues = ['124,92,255','158,140,255','90,90,140','120,120,170'];
+    const c = hues[(Math.random()*hues.length)|0];
+    return { rgb: `rgb(${c})`, a: 0.35 + Math.random()*0.3 };
   }
-}
 
-function updateCounters() {
-  levelCounterEl.textContent = String(level).padStart(3, '0');
-  mineCounterEl.textContent = `${missCount}/${MINE_COUNT}`;
-}
+  function makeParticle(){
+    const nc = neutralColor();
+    return {
+      x: Math.random()*W, y: Math.random()*H,
+      vx: 0, vy: 0,
+      snx: 0.5, sny: 0.5, slum: 0.5,
+      sx: Math.random()*W, sy: Math.random()*H,
+      colorRGB: nc.rgb, baseA: nc.a,
+      driftPhase: Math.random()*Math.PI*2,
+      driftSpeed: 0.2 + Math.random()*0.5,
+      driftAmp: 10 + Math.random()*26
+    };
+  }
 
-function getNeighbors(idx) {
-  const row = Math.floor(idx / columns);
-  const col = idx % columns;
-  const result = [];
-
-  for (let dr = -1; dr <= 1; dr++) {
-    for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      const r = row + dr;
-      const c = col + dc;
-      if (r < 0 || r >= rows || c < 0 || c >= columns) continue;
-      result.push(r * columns + c);
+  let dotSize = 1.6;
+  function rebuildPool(){
+    const n = parseInt(densitySlider.value, 10);
+    particles = [];
+    for(let i=0;i<n;i++) particles.push(makeParticle());
+    statCount.textContent = n;
+    dotSize = n > 40000 ? 0.75 : n > 24000 ? 0.9 : n > 16000 ? 1.05 : n > 9000 ? 1.25 : n > 4000 ? 1.45 : 1.7;
+    if(activeShape){
+      assignShapeMapping(activeShape, false);
+      computeLayout(activeShape);
     }
   }
 
-  return result;
-}
+  densitySlider.addEventListener('change', rebuildPool);
 
-function countAdjacentMines(idx) {
-  return getNeighbors(idx).filter((n) => mines.has(n)).length;
-}
+  // ---------- loading images (svg or raster) ----------
+  addBtn.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', (e)=>{
+    const files = Array.from(e.target.files || []);
+    files.forEach(processFile);
+    fileInput.value = '';
+  });
 
-const NUMBER_CLASS = ['', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8'];
+  function processFile(file){
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = function(){
+      rasterize(img, file.name, url);
+    };
+    img.onerror = function(){
+      URL.revokeObjectURL(url);
+      showToast(`"${file.name}" 을(를) 불러오지 못했어요.`);
+    };
+    img.src = url;
+  }
 
-function revealCell(idx) {
-  if (revealed.has(idx) || mines.has(idx)) return;
+  // ---------- text -> particle shape ----------
+  function textToCanvas(text){
+    const fontSize = 220;
+    const padX = 60, padY = 70;
+    const fontSpec = `800 ${fontSize}px "Apple SD Gothic Neo","Malgun Gothic","Pretendard",sans-serif`;
 
-  revealed.add(idx);
-  safeRevealed++;
+    const measure = document.createElement('canvas').getContext('2d');
+    measure.font = fontSpec;
+    const textWidth = Math.max(measure.measureText(text).width, 10);
 
-  const cellEl = boardEl.children[idx];
-  cellEl.classList.add('revealed', 'mine-found');
+    const cw = Math.ceil(textWidth) + padX*2;
+    const ch = Math.ceil(fontSize*1.15) + padY*2;
 
-  const count = countAdjacentMines(idx);
-  if (count > 0) {
-    cellEl.textContent = count;
-    cellEl.classList.add(NUMBER_CLASS[count]);
-  } else {
-    cellEl.textContent = '';
-    // 인접 지뢰가 0개면 주변 칸을 자동으로 연다 (플러드 필)
-    getNeighbors(idx).forEach((n) => {
-      if (!revealed.has(n) && !mines.has(n)) {
-        revealCell(n);
+    const tCanvas = document.createElement('canvas');
+    tCanvas.width = cw; tCanvas.height = ch;
+    const tctx = tCanvas.getContext('2d');
+    tctx.clearRect(0,0,cw,ch);
+    tctx.font = fontSpec;
+    tctx.textAlign = 'center';
+    tctx.textBaseline = 'middle';
+    const grad = tctx.createLinearGradient(0,0,cw,0);
+    grad.addColorStop(0, '#7c5cff');
+    grad.addColorStop(0.5, '#cfa8ff');
+    grad.addColorStop(1, '#cfcfe6');
+    tctx.fillStyle = grad;
+    tctx.fillText(text, cw/2, ch/2 + fontSize*0.04);
+    return tCanvas;
+  }
+
+  function addTextShape(){
+    const text = textInput.value.trim();
+    if(!text) return;
+    const tCanvas = textToCanvas(text);
+    rasterize(tCanvas, text, null);
+    textInput.value = '';
+    textInput.blur();
+  }
+
+  textAddBtn.addEventListener('click', addTextShape);
+  textInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); addTextShape(); }
+    e.stopPropagation();
+  });
+
+  function rasterize(img, name, urlToRevoke){
+    const SIZE = 760;
+    let iw = img.naturalWidth || img.width || 512;
+    let ih = img.naturalHeight || img.height || 512;
+    const scale = Math.min(SIZE/iw, SIZE/ih, 1);
+    const cw = Math.max(1, Math.round(iw*scale));
+    const ch = Math.max(1, Math.round(ih*scale));
+
+    const off = document.createElement('canvas');
+    off.width = cw; off.height = ch;
+    const octx = off.getContext('2d');
+    octx.clearRect(0,0,cw,ch);
+    try {
+      octx.drawImage(img, 0, 0, cw, ch);
+    } catch(err){
+      if(urlToRevoke) URL.revokeObjectURL(urlToRevoke);
+      showToast(`"${name}" 을(를) 그리는 중 문제가 발생했어요.`);
+      return;
+    }
+
+    let data;
+    try {
+      data = octx.getImageData(0,0,cw,ch).data;
+    } catch(err){
+      if(urlToRevoke) URL.revokeObjectURL(urlToRevoke);
+      showToast(`"${name}" 은(는) 외부 리소스를 참조하고 있어 읽을 수 없어요.`);
+      return;
+    }
+
+    const rawPoints = [];
+    const step = 1;
+    const LUM_FLOOR = 92; // keep dark pixels from vanishing into the black background
+    let minX=1,maxX=0,minY=1,maxY=0;
+    for(let y=0; y<ch; y+=step){
+      for(let x=0; x<cw; x+=step){
+        const idx = (y*cw + x) * 4;
+        const a = data[idx+3];
+        if(a > 40){
+          let r = data[idx], g = data[idx+1], b = data[idx+2];
+          const lum = 0.299*r + 0.587*g + 0.114*b;
+          if(lum < LUM_FLOOR){
+            const boost = lum > 1 ? LUM_FLOOR / lum : 1;
+            r = Math.min(255, r*boost + 6);
+            g = Math.min(255, g*boost + 6);
+            b = Math.min(255, b*boost + 6);
+          }
+          const nx = x/cw, ny = y/ch;
+          rawPoints.push({ nx, ny, r:r|0, g:g|0, b:b|0, a:a/255 });
+          if(nx<minX) minX=nx; if(nx>maxX) maxX=nx;
+          if(ny<minY) minY=ny; if(ny>maxY) maxY=ny;
+        }
       }
+    }
+
+    if(urlToRevoke) URL.revokeObjectURL(urlToRevoke);
+
+    if(rawPoints.length === 0){
+      showToast(`"${name}" 에서 픽셀을 찾지 못했어요. 이미지가 비어있거나 외부 참조 파일일 수 있어요.`);
+      return;
+    }
+
+    const thumb = off.toDataURL('image/png');
+    const shuffled = rawPoints.slice();
+    for(let i = shuffled.length - 1; i > 0; i--){
+      const j = (Math.random() * (i+1)) | 0;
+      const tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+    }
+    const shape = {
+      id: ++shapeSeq,
+      name,
+      thumb,
+      rawPoints,
+      shuffled,
+      cw, ch,
+      minX, maxX: Math.max(maxX, minX+0.001),
+      minY, maxY: Math.max(maxY, minY+0.001)
+    };
+    shapes.push(shape);
+    addThumbToTray(shape);
+    selectShape(shape);
+  }
+
+  function addThumbToTray(shape){
+    const el = document.createElement('div');
+    el.className = 'thumb';
+    el.style.backgroundImage = `url(${shape.thumb})`;
+    el.dataset.id = shape.id;
+    el.title = shape.name;
+
+    const rm = document.createElement('div');
+    rm.className = 'rm';
+    rm.textContent = '×';
+    rm.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      removeShape(shape, el);
+    });
+    el.appendChild(rm);
+
+    el.addEventListener('click', ()=> selectShape(shape));
+    tray.appendChild(el);
+  }
+
+  function removeShape(shape, el){
+    shapes = shapes.filter(s => s.id !== shape.id);
+    el.remove();
+    if(activeShape && activeShape.id === shape.id){
+      activeShape = null;
+      statFile.textContent = '—';
+      scatterAll();
+    }
+  }
+
+  function refreshTrayActiveState(){
+    Array.from(tray.children).forEach(el=>{
+      el.classList.toggle('active', activeShape && String(activeShape.id) === el.dataset.id);
     });
   }
-}
 
-let highlightTimeout = null;
+  // ---------- selecting / target mapping ----------
+  function selectShape(shape){
+    if(activeShape && activeShape.id === shape.id){
+      activeShape = null;
+      statFile.textContent = '—';
+      scatterAll();
+      refreshTrayActiveState();
+      return;
+    }
+    activeShape = shape;
+    statFile.textContent = shape.name.length > 20 ? shape.name.slice(0,18)+'…' : shape.name;
+    panX = 0; panY = 0;
+    assignShapeMapping(shape, true);
+    computeLayout(shape);
+    refreshTrayActiveState();
+  }
 
-function highlightNeighbors(idx) {
-  const neighbors = getNeighbors(idx);
-
-  clearTimeout(highlightTimeout);
-  // 이전 하이라이트 제거
-  [...boardEl.children].forEach((el) => el.classList.remove('highlight'));
-
-  neighbors.forEach((n) => {
-    boardEl.children[n].classList.add('highlight');
-  });
-
-  highlightTimeout = setTimeout(() => {
-    neighbors.forEach((n) => {
-      boardEl.children[n].classList.remove('highlight');
+  function scatterAll(){
+    particles.forEach(p=>{
+      p.sx = Math.random()*W;
+      p.sy = Math.random()*H;
     });
-  }, 800);
-}
-
-function onCellClick(e) {
-  if (gameOver) return;
-
-  const idx = Number(e.currentTarget.dataset.index);
-
-  if (revealed.has(idx)) {
-    // 이미 열린 안전한 칸(숫자 포함)을 다시 클릭하면 해당 숫자가 세는 주변 영역을 표시
-    if (!mines.has(idx)) {
-      highlightNeighbors(idx);
-    }
-    return;
   }
 
-  if (mines.has(idx)) {
-    // 지뢰를 밟음 -> 실수 카운트 증가, 게임은 계속 진행
-    revealed.add(idx);
-    missCount++;
-    const cellEl = e.currentTarget;
-    cellEl.classList.add('revealed', 'mine-exploded-safe');
-    cellEl.textContent = '💥';
-    updateCounters();
+  function assignShapeMapping(shape, reshuffleScatter){
+    const n = particles.length;
+    const bw = Math.max(shape.maxX - shape.minX, 0.001);
+    const bh = Math.max(shape.maxY - shape.minY, 0.001);
+    const pool = shape.shuffled;
+    const poolLen = pool.length;
+    // sub-pixel jitter (in bbox-normalized space) so repeated/adjacent points
+    // don't stack into a visible grid when n differs from the source pixel count
+    const jitterNX = (1.4 / shape.cw) / bw;
+    const jitterNY = (1.4 / shape.ch) / bh;
 
-    if (missCount >= MINE_COUNT) {
-      triggerGameOver();
-    }
-  } else {
-    // 안전한 칸 -> 진행 (숫자 힌트 표시, 0이면 주변 자동 오픈)
-    revealCell(idx);
-
-    const safeTotal = totalCells - MINE_COUNT;
-    if (safeRevealed >= safeTotal) {
-      levelClear();
+    for(let i=0;i<n;i++){
+      const src = pool[i % poolLen];
+      const p = particles[i];
+      let nx = (src.nx - shape.minX) / bw + (Math.random()-0.5) * jitterNX;
+      let ny = (src.ny - shape.minY) / bh + (Math.random()-0.5) * jitterNY;
+      p.snx = nx < 0 ? 0 : (nx > 1 ? 1 : nx);
+      p.sny = ny < 0 ? 0 : (ny > 1 ? 1 : ny);
+      p.slum = (0.299*src.r + 0.587*src.g + 0.114*src.b) / 255; // luminance -> relief depth
+      p.colorRGB = `rgb(${src.r},${src.g},${src.b})`;
+      p.baseA = Math.max(src.a, 0.55);
+      if(reshuffleScatter){ p.sx = Math.random()*W; p.sy = Math.random()*H; }
     }
   }
-}
 
-function levelClear() {
-  gameOver = true;
-  smileyBtn.textContent = '😎';
-
-  if (level >= MAX_LEVEL) {
-    messageEl.textContent = '🎉 축하합니다! 100단계를 모두 클리어했습니다! 🎉';
-    disableBoard();
-    return;
+  function computeLayout(shape){
+    const bw = Math.max(shape.maxX - shape.minX, 0.001);
+    const bh = Math.max(shape.maxY - shape.minY, 0.001);
+    const marginRatio = 0.7;
+    const boxSize = Math.min(W,H) * marginRatio;
+    let tw = boxSize, th = boxSize * (bh/bw);
+    if(bh > bw){ th = boxSize; tw = boxSize * (bw/bh); }
+    currentTW = tw; currentTH = th;
   }
 
-  messageEl.textContent = `레벨 ${level} 클리어! 다음 단계로 이동합니다...`;
-  disableBoard();
+  // ---------- animation ----------
+  const SPRING = 0.055;
+  const DAMP = 0.82;
+  const FOCAL = 620;
 
-  setTimeout(() => {
-    level++;
-    initLevel();
-  }, 1100);
-}
+  function clamp(v,lo,hi){ return v<lo?lo:(v>hi?hi:v); }
 
-function triggerGameOver() {
-  gameOver = true;
-  smileyBtn.textContent = '😵';
-  messageEl.textContent = `GAME OVER — 레벨 ${level}에서 지뢰를 ${MINE_COUNT}번 밟았습니다.`;
+  function animate(now){
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(7,7,11,0.28)';
+    ctx.fillRect(0,0,W,H);
 
-  // 남은 지뢰 모두 표시
-  [...boardEl.children].forEach((el, idx) => {
-    if (mines.has(idx) && !revealed.has(idx)) {
-      el.classList.add('mine-revealed-other');
-      el.textContent = '💣';
+    const t = (now || performance.now()) * 0.001;
+    const dt = lastFrameT ? Math.min((now - lastFrameT)/1000, 0.05) : 0.016;
+    lastFrameT = now || performance.now();
+
+    if(rotationEnabled) rotationAngle += rotationSpeed * dt;
+
+    const assembled = !!activeShape;
+    const centerX = W/2 + panX;
+    const centerY = H/2 + panY;
+    const cosA = Math.cos(rotationAngle);
+    const sinA = Math.sin(rotationAngle);
+
+    for(let i=0;i<particles.length;i++){
+      const p = particles[i];
+      let gx, gy, depth = 1;
+
+      if(assembled){
+        const lx0 = (p.snx - 0.5) * currentTW;
+        const ly0 = (p.sny - 0.5) * currentTH;
+        // flat 2D rotation in-plane (no depth/perspective)
+        gx = centerX + lx0 * cosA - ly0 * sinA;
+        gy = centerY + lx0 * sinA + ly0 * cosA;
+        depth = 1;
+      } else {
+        gx = p.sx + Math.cos(t*p.driftSpeed + p.driftPhase) * p.driftAmp;
+        gy = p.sy + Math.sin(t*p.driftSpeed*0.8 + p.driftPhase) * p.driftAmp;
+      }
+
+      const ax = (gx - p.x) * SPRING;
+      const ay = (gy - p.y) * SPRING;
+      p.vx = (p.vx + ax) * DAMP;
+      p.vy = (p.vy + ay) * DAMP;
+      p.x += p.vx;
+      p.y += p.vy;
+
+      ctx.globalAlpha = clamp(p.baseA * depth, 0, 1);
+      ctx.fillStyle = p.colorRGB;
+      const s = dotSize * depth;
+      ctx.fillRect(p.x, p.y, s, s);
+    }
+    ctx.globalAlpha = 1;
+    animId = requestAnimationFrame(animate);
+  }
+
+  // ---------- rotation & movement controls ----------
+  function setRotation(on){
+    rotationEnabled = on;
+    rotateBtn.classList.toggle('active', on);
+  }
+  rotateBtn.addEventListener('click', ()=> setRotation(!rotationEnabled));
+
+  const PAN_STEP = 46;
+  const PAN_LIMIT_RATIO = 0.42;
+
+  window.addEventListener('keydown', (e)=>{
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','Spacebar'].includes(e.key)) e.preventDefault();
+
+    switch(e.key){
+      case 'r': case 'R':
+        setRotation(!rotationEnabled);
+        break;
+      case 'q': case 'Q':
+        rotationAngle -= 0.18;
+        break;
+      case 'e': case 'E':
+        rotationAngle += 0.18;
+        break;
+      case 'ArrowLeft':
+        panX = clamp(panX - PAN_STEP, -W*PAN_LIMIT_RATIO, W*PAN_LIMIT_RATIO);
+        break;
+      case 'ArrowRight':
+        panX = clamp(panX + PAN_STEP, -W*PAN_LIMIT_RATIO, W*PAN_LIMIT_RATIO);
+        break;
+      case 'ArrowUp':
+        panY = clamp(panY - PAN_STEP, -H*PAN_LIMIT_RATIO, H*PAN_LIMIT_RATIO);
+        break;
+      case 'ArrowDown':
+        panY = clamp(panY + PAN_STEP, -H*PAN_LIMIT_RATIO, H*PAN_LIMIT_RATIO);
+        break;
+      case ' ':
+      case 'Spacebar':
+        if(activeShape) selectShape(activeShape);
+        else if(shapes.length) selectShape(shapes[shapes.length-1]);
+        break;
     }
   });
 
-  disableBoard();
-}
-
-function disableBoard() {
-  [...boardEl.children].forEach((c) => c.classList.add('revealed'));
-}
-
-smileyBtn.addEventListener('click', () => {
-  level = 1;
-  initLevel();
-});
-
-window.addEventListener('resize', () => {
-  if (!gameOver) render();
-});
-
-// 시작
-initLevel();
+  rebuildPool();
+  animate();
+})();
 </script>
 </body>
 </html>
