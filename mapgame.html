@@ -282,7 +282,7 @@ function initLevel() {
   revealed = new Set();
   flags = new Set();
   messageEl.innerHTML = '&nbsp;';
-  smileyBtn.textContent = '🙂';
+  smileyBtn.textContent = '🎲';
 
   // 단계별 칸 수 계산 (2씩 증가)
   totalCells = BASE_CELLS + (level - 1) * CELLS_PER_LEVEL;
@@ -292,11 +292,26 @@ function initLevel() {
 
   // 단계가 오를수록 지뢰 개수 증가 (LEVELS_PER_MINE_STEP 단계마다 +1)
   currentMineCount = BASE_MINE_COUNT + Math.floor((level - 1) / LEVELS_PER_MINE_STEP);
-  // 안전 칸이 최소 몇 개는 남도록 상한 적용
-  currentMineCount = Math.min(currentMineCount, Math.floor(totalCells * 0.4));
+  // 안전 칸이 최소 몇 개는 남도록 상한 적용 (인접 제한을 고려해 다소 낮게 설정)
+  currentMineCount = Math.min(currentMineCount, Math.floor(totalCells * 0.22));
 
-  // 지뢰 배치
+  // 지뢰 배치 (서로 인접하지 않도록 배치)
   mines = new Set();
+  let attempts = 0;
+  const maxAttempts = totalCells * 60;
+
+  while (mines.size < currentMineCount && attempts < maxAttempts) {
+    attempts++;
+    const idx = Math.floor(Math.random() * totalCells);
+    if (mines.has(idx)) continue;
+
+    const hasAdjacentMine = getNeighbors(idx).some((n) => mines.has(n));
+    if (hasAdjacentMine) continue;
+
+    mines.add(idx);
+  }
+
+  // 안전장치: 인접 조건 때문에 목표 개수를 못 채웠다면 나머지는 조건 없이 채움
   while (mines.size < currentMineCount) {
     mines.add(Math.floor(Math.random() * totalCells));
   }
@@ -363,27 +378,40 @@ function countAdjacentMines(idx) {
 
 const NUMBER_CLASS = ['', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8'];
 
-function revealCell(idx) {
-  if (revealed.has(idx) || mines.has(idx)) return;
+const MAX_REVEAL_PER_CLICK = 8; // 한 번의 클릭으로 최대 이만큼만 한 번에 열림
 
-  revealed.add(idx);
-  safeRevealed++;
+function revealCell(startIdx) {
+  if (revealed.has(startIdx) || mines.has(startIdx)) return;
 
-  const cellEl = boardEl.children[idx];
-  cellEl.classList.add('revealed', 'mine-found');
+  const queue = [startIdx];
+  const queued = new Set([startIdx]);
+  let openedThisClick = 0;
 
-  const count = countAdjacentMines(idx);
-  if (count > 0) {
-    cellEl.textContent = count;
-    cellEl.classList.add(NUMBER_CLASS[count]);
-  } else {
-    cellEl.textContent = '';
-    // 인접 지뢰가 0개면 주변 칸을 자동으로 연다 (플러드 필)
-    getNeighbors(idx).forEach((n) => {
-      if (!revealed.has(n) && !mines.has(n)) {
-        revealCell(n);
-      }
-    });
+  while (queue.length > 0 && openedThisClick < MAX_REVEAL_PER_CLICK) {
+    const idx = queue.shift();
+    if (revealed.has(idx) || mines.has(idx)) continue;
+
+    revealed.add(idx);
+    safeRevealed++;
+    openedThisClick++;
+
+    const cellEl = boardEl.children[idx];
+    cellEl.classList.add('revealed', 'mine-found');
+
+    const count = countAdjacentMines(idx);
+    if (count > 0) {
+      cellEl.textContent = count;
+      cellEl.classList.add(NUMBER_CLASS[count]);
+    } else {
+      cellEl.textContent = '';
+      // 인접 지뢰가 0개면 주변 칸을 이어서 열되, 한 클릭당 최대 개수 제한을 넘기지 않는다
+      getNeighbors(idx).forEach((n) => {
+        if (!revealed.has(n) && !mines.has(n) && !queued.has(n)) {
+          queued.add(n);
+          queue.push(n);
+        }
+      });
+    }
   }
 }
 
