@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>지뢰 찾기 - 100단계</title>
+<title>조심조심!꽥꽥</title>
 <style>
 :root {
   --bg: #c0c0c0;
@@ -24,17 +24,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at top, #f3e2b3 0%, #d8bd7d 70%);
+  background: #F5F5DC;
   font-family: 'Courier New', Courier, monospace;
   padding: 16px;
 }
 
 .game-container {
-  background: linear-gradient(160deg, #f0dfa8 0%, #d3b170 100%);
+  background: #F5F5DC;
   padding: 16px;
-  border: 3px solid #8a6d3b;
+  border: 4px solid #FF8F00;
   border-radius: 16px;
-  box-shadow: 0 14px 28px rgba(90, 65, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 14px 28px rgba(255, 143, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   max-width: 96vw;
 }
 
@@ -88,7 +88,7 @@ body {
   padding: 2px 8px;
   border: 2px solid #6b5a35;
   border-radius: 4px;
-  min-width: 46px;
+  min-width: 54px;
   text-align: center;
   letter-spacing: 2px;
   font-family: 'Courier New', monospace;
@@ -136,7 +136,7 @@ body {
   display: grid;
   gap: 6px;
   background: #4a3b1f;
-  border: 1px solid #2e2410;
+  border: 2px solid #FF8F00;
   border-radius: 12px;
   padding: 12px;
   box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(255, 255, 255, 0.08);
@@ -216,17 +216,17 @@ body {
 </head>
 <body>
   <div class="game-container">
-    <h1 class="title">🌟지뢰 찾기 챌린지 🌟</h1>
-    <p class="rule-text"> 숫자는 주변 6칸의 지뢰 개수, 길게 누르면 🚩 깃발 표시!</p>
+    <h1 class="title">🌟 오리 찾기 챌린지🌟</h1>
+    <p class="rule-text">단계가 오를수록 오리가 늘어나요! 숫자는 주변 8칸의 오리 개수, 길게 누르면 🚩 깃발 표시</p>
 
     <div class="header">
       <div class="label-box">
         <span class="label">LEVEL</span>
-        <div class="counter" id="level-counter">001</div>
+        <div class="counter" id="level-counter">0001</div>
       </div>
 
       <div class="label-box">
-        <span class="label">MINES</span>
+        <span class="label">DUCKS</span>
         <div class="counter" id="mines-total-counter">5</div>
       </div>
 
@@ -249,7 +249,7 @@ body {
 // ===== 게임 설정 =====
 const BASE_CELLS = 25;       // 1단계 기본 칸 수
 const CELLS_PER_LEVEL = 2;   // 단계마다 늘어나는 칸 수 (2의 배수 증가)
-const MAX_LEVEL = 100;       // 최대 단계
+const MAX_LEVEL = 1000;      // 최대 단계
 const BASE_MINE_COUNT = 5;   // 1단계 기본 지뢰 개수
 const LEVELS_PER_MINE_STEP = 5; // 이 단계 수마다 지뢰가 1개씩 늘어남
 const MAX_MISSES = 5;        // 실수(지뢰 밟기) 허용 횟수는 항상 고정
@@ -282,7 +282,7 @@ function initLevel() {
   revealed = new Set();
   flags = new Set();
   messageEl.innerHTML = '&nbsp;';
-  smileyBtn.textContent = '🎲';
+  smileyBtn.textContent = '🙂';
 
   // 단계별 칸 수 계산 (2씩 증가)
   totalCells = BASE_CELLS + (level - 1) * CELLS_PER_LEVEL;
@@ -349,7 +349,7 @@ function render() {
 }
 
 function updateCounters() {
-  levelCounterEl.textContent = String(level).padStart(3, '0');
+  levelCounterEl.textContent = String(level).padStart(4, '0');
   minesTotalCounterEl.textContent = currentMineCount;
   mineCounterEl.textContent = `${missCount}/${MAX_MISSES}`;
 }
@@ -378,7 +378,7 @@ function countAdjacentMines(idx) {
 
 const NUMBER_CLASS = ['', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8'];
 
-const MAX_REVEAL_PER_CLICK = 8; // 한 번의 클릭으로 최대 이만큼만 한 번에 열림
+const MAX_REVEAL_PER_CLICK = 6; // 한 번의 클릭으로 최대 이만큼만 한 번에 열림
 
 function revealCell(startIdx) {
   if (revealed.has(startIdx) || mines.has(startIdx)) return;
@@ -526,7 +526,7 @@ function levelClear() {
   smileyBtn.textContent = '😎';
 
   if (level >= MAX_LEVEL) {
-    messageEl.textContent = '🎉 축하합니다! 100단계를 모두 클리어했습니다! 🎉';
+    messageEl.textContent = `🎉 축하합니다! ${MAX_LEVEL}단계를 모두 클리어했습니다! 🎉`;
     disableBoard();
     return;
   }
@@ -543,7 +543,7 @@ function levelClear() {
 function triggerGameOver() {
   gameOver = true;
   smileyBtn.textContent = '😵';
-  messageEl.textContent = `GAME OVER — 레벨 ${level}에서 지뢰를 ${MAX_MISSES}번 밟았습니다.`;
+  messageEl.textContent = `GAME OVER — 레벨 ${level}에서 오리를 ${MAX_MISSES}번 밟았습니다.`;
 
   // 남은 지뢰 모두 표시
   [...boardEl.children].forEach((el, idx) => {
