@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>스노우크래프트 - Snow Battle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ally:#e0483e;
+    --ally-dark:#a8291f;
+    --enemy:#3f8f57;
+    --enemy-dark:#256238;
+    --gold:#ffd166;
+    --panel:#1c3a52;
+    --panel-light:#2c5678;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    width:100%; height:100%;
+    background:#081420;
+    font-family:'Nanum Gothic', sans-serif;
+    color:#eaf4ff;
+    overflow:hidden;
+    -webkit-user-select:none;
+    user-select:none;
+  }
+  #stage{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+  }
+  canvas{
+    position:absolute;
+    inset:0;
+    display:block;
+    touch-action:none;
+    cursor:default;
+  }
+  #ui-top{
+    position:fixed;
+    top:12px;
+    left:12px;
+    right:58px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    z-index:5;
+    pointer-events:none;
+  }
+  .badge{
+    background:linear-gradient(180deg,var(--panel-light),var(--panel));
+    border:3px solid #0a1926;
+    border-radius:10px;
+    padding:6px 14px;
+    font-family:'Jua', sans-serif;
+    font-size:18px;
+    letter-spacing:1px;
+    box-shadow: 0 3px 0 #06121c, inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  #lifeRow{ display:flex; gap:6px; }
+  .mitten{
+    width:18px;height:22px;
+    background:var(--ally);
+    border:2px solid var(--ally-dark);
+    border-radius:60% 60% 50% 50%;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+    transition: opacity .3s, transform .3s;
+  }
+  .mitten.dead{ background:#555; border-color:#333; opacity:.35; transform:scale(.85) rotate(20deg); }
+
+  #fsBtn{
+    position:fixed;
+    top:12px; right:12px;
+    z-index:9;
+    pointer-events:auto;
+    width:36px; height:36px;
+    background:linear-gradient(180deg,var(--panel-light),var(--panel));
+    border:3px solid #0a1926;
+    border-radius:10px;
+    color:#eaf4ff;
+    font-size:17px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow: 0 3px 0 #06121c, inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  #fsBtn:active{ transform:translateY(2px); box-shadow:none; }
+
+  #hint{
+    position:fixed;
+    left:50%; top:62px;
+    transform:translateX(-50%);
+    font-family:'Jua', sans-serif;
+    font-size:14px;
+    background:rgba(10,20,30,0.55);
+    padding:6px 16px;
+    border-radius:20px;
+    z-index:5;
+    pointer-events:none;
+    white-space:nowrap;
+    transition:opacity 1s;
+  }
+
+  #overlay{
+    position:fixed; inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:14px;
+    background:rgba(6,14,22,0.72);
+    z-index:10;
+    text-align:center;
+    backdrop-filter: blur(2px);
+  }
+  #overlay h1{
+    font-family:'Jua', sans-serif;
+    font-size:44px;
+    margin:0;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.4);
+  }
+  #overlay p{ margin:0; font-size:16px; opacity:.85; max-width:420px; padding:0 20px;}
+  #overlay button{
+    font-family:'Jua', sans-serif;
+    font-size:18px;
+    padding:12px 30px;
+    background:linear-gradient(180deg,#ffe08a,var(--gold));
+    color:#4a2b00;
+    border:none;
+    border-radius:30px;
+    cursor:pointer;
+    box-shadow: 0 4px 0 #b8862b;
+  }
+  #overlay button:active{ transform:translateY(3px); box-shadow:0 1px 0 #b8862b; }
+
+  #levelToast{
+    position:fixed;
+    left:50%; top:42%;
+    transform:translate(-50%,-50%) scale(0.8);
+    font-family:'Jua', sans-serif;
+    font-size:38px;
+    color:var(--gold);
+    text-shadow: 0 3px 0 rgba(0,0,0,.5);
+    opacity:0;
+    z-index:8;
+    pointer-events:none;
+    transition: opacity .35s, transform .35s;
+  }
+  #levelToast.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+
+  #credit{
+    position:fixed;
+    left:12px; bottom:8px;
+    font-size:11px;
+    opacity:.4;
+    z-index:5;
+    pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game"></canvas>
+
+  <div id="ui-top">
+    <div class="badge">LEVEL <span id="levelNum">1</span> / 6</div>
+    <div class="badge" id="lifeRow">
+      <div class="mitten" data-i="0"></div>
+      <div class="mitten" data-i="1"></div>
+      <div class="mitten" data-i="2"></div>
+    </div>
+  </div>
+  <button id="fsBtn" title="전체화면">⛶</button>
+  <div id="hint">드래그로 이동·충전 후 발사 · 눈 벽 뒤에 숨으면 안전해요 · 맞아도 계속 움직일 수 있어요!</div>
+  <div id="levelToast">LEVEL 1</div>
+  <div id="overlay">
+    <h1 id="overlayTitle">GAME OVER</h1>
+    <p id="overlayText">적군들이 낄낄거리며 비웃습니다...</p>
+    <button id="restartBtn">다시 시작</button>
+  </div>
+  <div id="credit">Snowcraft-style fan remake</div>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlayTitle');
+  const overlayText = document.getElementById('overlayText');
+  const restartBtn = document.getElementById('restartBtn');
+  const levelToast = document.getElementById('levelToast');
+  const levelNumEl = document.getElementById('levelNum');
+  const hintEl = document.getElementById('hint');
+  const mittens = document.querySelectorAll('.mitten');
+  const fsBtn = document.getElementById('fsBtn');
+  const stageEl = document.getElementById('stage');
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+  // ---------- full-screen field: field space === screen space (no rotation, no border) ----------
+  let FW = window.innerWidth, FH = window.innerHeight;
+  let DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let UNIT_SCALE = 1;
+  let ALLY_ZONE, ENEMY_ZONE, BARRIERS;
+
+  function resizeCanvas(){
+    FW = window.innerWidth;
+    FH = window.innerHeight;
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(FW*DPR);
+    canvas.height = Math.round(FH*DPR);
+    canvas.style.width = FW+'px';
+    canvas.style.height = FH+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    UNIT_SCALE = clamp(FH/620, 0.85, 2.0);
+    recomputeLayout();
+    initSnow();
+  }
+
+  function recomputeLayout(){
+    ALLY_ZONE = { yMin: FH*0.42, yMax: FH-40, xMin: 30, xMax: FW-30 };
+    ENEMY_ZONE = { yMin: 40, yMax: FH*0.58, xMin: 30, xMax: FW-30 };
+    const prevFlash = BARRIERS ? BARRIERS.map(b=>b.flash||0) : [0,0];
+    const bw = clamp(FW*0.085, 74, 140);
+    const barrierY = ALLY_ZONE.yMin + (ALLY_ZONE.yMax-ALLY_ZONE.yMin)*0.32;
+    BARRIERS = [
+      { x: ALLY_ZONE.xMin + bw*0.5 + 6, y: barrierY, w: bw, h: 36*UNIT_SCALE, flash: prevFlash[0] },
+      { x: ALLY_ZONE.xMax - bw*0.5 - 6, y: barrierY, w: bw, h: 36*UNIT_SCALE, flash: prevFlash[1] }
+    ];
+    if(typeof players!=='undefined' && players){
+      players.forEach(p=>{ p.x=clamp(p.x,ALLY_ZONE.xMin,ALLY_ZONE.xMax); p.y=clamp(p.y,ALLY_ZONE.yMin,ALLY_ZONE.yMax); });
+    }
+    if(typeof enemies!=='undefined' && enemies){
+      enemies.forEach(e=>{ e.x=clamp(e.x,ENEMY_ZONE.xMin,ENEMY_ZONE.xMax); e.y=clamp(e.y,ENEMY_ZONE.yMin,ENEMY_ZONE.yMax); });
+    }
+  }
+
+  function hitsBarrierSegment(x, yFrom, yTo){
+    const lo = Math.min(yFrom,yTo), hi = Math.max(yFrom,yTo);
+    for(const b of BARRIERS){
+      if(Math.abs(x-b.x) < b.w/2 && hi >= b.y-b.h/2 && lo <= b.y+b.h/2) return b;
+    }
+    return null;
+  }
+
+  const ENEMY_COUNTS = [3,4,5,6,8,7];
+  const ENEMY_ACCURACY = [55,45,38,30,26,18];
+  const ENEMY_INTERVAL = [[1800,2600],[1500,2300],[1300,2000],[1100,1800],[900,1500],[700,1200]];
+
+  const HIT_RADIUS_BASE = 24;
+  const MIN_RANGE_BASE = 90;
+  const CHAR_SCALE = 0.72; // 캐릭터 시각적 크기 축소 비율
+  const MAX_CHARGE_MS = 950;
+  const SNOWBALL_SPEED_FACTOR = 0.774; // px/sec per field-height unit
+
+  function hitRadius(){ return HIT_RADIUS_BASE*UNIT_SCALE*CHAR_SCALE; }
+  function minRange(){ return MIN_RANGE_BASE*UNIT_SCALE; }
+  function maxRange(){ return FH-70; }
+  function snowballSpeed(){ return FH*SNOWBALL_SPEED_FACTOR; }
+
+  let level = 1;
+  let players = [];
+  let enemies = [];
+  let snowballs = [];
+  let particles = [];
+  let snow = [];
+  let selected = null;
+  let dragging = false;
+  let chargeStart = 0;
+  let gameOver = false;
+  let levelClearing = false;
+  let last = performance.now();
+
+  // ---------- entities ----------
+  function makeAlly(i){
+    return { id:'a'+i, team:'ally', x: FW*(0.30+i*0.20), y: FH*0.86,
+      hitCount:0, state:'idle', timer:0, wobble:Math.random()*10, facing:-1 };
+  }
+  function makeEnemy(i, n){
+    const spread = Math.min(FW-160, FW*0.6);
+    const startX = FW/2 - spread/2 + (n>1 ? spread/(n-1)*i : spread/2);
+    return { id:'e'+i, team:'enemy', x: clamp(startX,60,FW-60), y: rand(FH*0.14,FH*0.30),
+      hitCount:0, state:'idle', timer:0, wobble:Math.random()*10, facing:1,
+      nextAction: rand(400,1400), targetX:null };
+  }
+  function setupPlayers(){ players = [makeAlly(0), makeAlly(1), makeAlly(2)]; }
+  function setupEnemiesForLevel(lv){
+    const n = ENEMY_COUNTS[lv-1];
+    enemies = [];
+    for(let i=0;i<n;i++) enemies.push(makeEnemy(i,n));
+    if(lv===6){ enemies.forEach(e=> e.y = rand(FH*0.30,FH*0.46)); }
+  }
+
+  function initSnow(){
+    snow = [];
+    for(let i=0;i<110;i++){
+      snow.push({x:rand(0,FW), y:rand(0,FH), r:rand(1,3.2), s:rand(18,55), drift:rand(-12,12)});
+    }
+  }
+
+  function resetGame(){
+    level = 1;
+    gameOver = false;
+    levelClearing = false;
+    selected = null; dragging = false;
+    snowballs = []; particles = [];
+    setupPlayers();
+    setupEnemiesForLevel(level);
+    overlay.style.display = 'none';
+    updateTopUI();
+    showLevelToast('LEVEL 1');
+  }
+
+  function updateTopUI(){
+    levelNumEl.textContent = level;
+    players.forEach((p,i)=>{ if(mittens[i]) mittens[i].classList.toggle('dead', p.state==='ko'); });
+  }
+  let toastTimer=null;
+  function showLevelToast(text){
+    levelToast.textContent = text;
+    levelToast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> levelToast.classList.remove('show'), 1100);
+  }
+  function endGame(win){
+    gameOver = true;
+    overlay.style.display = 'flex';
+    if(win){
+      overlayTitle.textContent = 'ALL CLEAR!';
+      overlayText.textContent = '6개 레벨을 모두 클리어했습니다. 아군 전원 생존을 축하합니다!';
+    } else {
+      overlayTitle.textContent = 'GAME OVER';
+      overlayText.textContent = '적군들이 낄낄거리며 비웃습니다... 처음부터 다시 도전해보세요.';
+    }
+  }
+
+  // ---------- fullscreen ----------
+  function isFullscreen(){ return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function toggleFullscreen(){
+    if(!isFullscreen()){
+      const req = stageEl.requestFullscreen || stageEl.webkitRequestFullscreen;
+      if(req) req.call(stageEl);
+    } else {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if(exit) exit.call(document);
+    }
+  }
+  fsBtn.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', ()=>{ fsBtn.textContent = isFullscreen()?'⤢':'⛶'; setTimeout(resizeCanvas,60); });
+  document.addEventListener('webkitfullscreenchange', ()=>{ fsBtn.textContent = isFullscreen()?'⤢':'⛶'; setTimeout(resizeCanvas,60); });
+  window.addEventListener('resize', resizeCanvas);
+
+  // ---------- input (field space === screen space, 1:1) ----------
+  function getPos(evt){
+    const rect = canvas.getBoundingClientRect();
+    const cx = (evt.touches ? evt.touches[0].clientX : evt.clientX);
+    const cy = (evt.touches ? evt.touches[0].clientY : evt.clientY);
+    return { x: cx-rect.left, y: cy-rect.top };
+  }
+  function pickAlly(pos){
+    let best=null, bd=40*UNIT_SCALE;
+    for(const p of players){
+      if(p.state==='ko') continue;
+      const d = dist(p,pos);
+      if(d<bd){ bd=d; best=p; }
+    }
+    return best;
+  }
+  function pointerDown(evt){
+    if(gameOver) return;
+    evt.preventDefault();
+    const pos = getPos(evt);
+    const unit = pickAlly(pos);
+    if(unit){
+      selected = unit; dragging = true; chargeStart = performance.now();
+      hintEl.style.opacity = '0';
+    }
+  }
+  function pointerMove(evt){
+    if(!dragging || !selected) return;
+    evt.preventDefault();
+    const pos = getPos(evt);
+    selected.x = clamp(pos.x, ALLY_ZONE.xMin, ALLY_ZONE.xMax);
+    selected.y = clamp(pos.y, ALLY_ZONE.yMin, ALLY_ZONE.yMax);
+  }
+  function pointerUp(evt){
+    if(!dragging || !selected) return;
+    evt.preventDefault();
+    const charge = clamp(performance.now()-chargeStart, 0, MAX_CHARGE_MS);
+    throwSnowball(selected, charge/MAX_CHARGE_MS);
+    dragging = false; selected = null;
+  }
+  canvas.addEventListener('mousedown', pointerDown);
+  canvas.addEventListener('mousemove', pointerMove);
+  window.addEventListener('mouseup', pointerUp);
+  canvas.addEventListener('touchstart', pointerDown, {passive:false});
+  canvas.addEventListener('touchmove', pointerMove, {passive:false});
+  window.addEventListener('touchend', pointerUp, {passive:false});
+  restartBtn.addEventListener('click', resetGame);
+
+  // ---------- game actions ----------
+  function throwSnowball(unit, chargeRatio){
+    if(unit.state==='ko' || unit.state==='shock' || unit.state==='down') return;
+    const range = minRange() + chargeRatio*(maxRange()-minRange());
+    const dir = unit.team==='ally' ? -1 : 1;
+    snowballs.push({ x: unit.x, y: unit.y, team: unit.team, vy: snowballSpeed()*dir, traveled:0, maxDist: range, age:0 });
+  }
+  function hitUnit(unit){
+    if(unit.state==='ko') return;
+    unit.hitCount++;
+    spawnBurst(unit.x, unit.y-20*UNIT_SCALE);
+    if(unit.team==='enemy'){
+      if(unit.hitCount===1){ unit.state='stunned'; unit.timer=850; }
+      else if(unit.hitCount===2){ unit.state='down'; unit.timer=1450; }
+      else { unit.state='ko'; unit.timer=800; }
+    } else {
+      if(unit.hitCount===1){ unit.state='shock'; unit.timer=3000; }
+      else { unit.state='ko'; unit.timer=800; }
+    }
+  }
+  function spawnBurst(x,y){
+    for(let i=0;i<10;i++){
+      particles.push({ x, y, vx: rand(-90,90)*UNIT_SCALE, vy: rand(-140,-20)*UNIT_SCALE, life: rand(0.35,0.6), age:0, r: rand(2,4)*UNIT_SCALE });
+    }
+  }
+  function flashBarrier(b){ b.flash = 1; }
+
+  // ---------- update ----------
+  function updateUnitState(u, dt){
+    if(u.state==='stunned' || u.state==='down' || u.state==='shock' || u.state==='ko'){
+      u.timer -= dt*1000;
+      if(u.state==='ko' && u.timer<=0){ u.timer=0; }
+      else if(u.timer<=0){ u.state='idle'; }
+    }
+  }
+  function updateEnemyAI(e, dt, now){
+    if(e.state!=='idle') return;
+    e.nextAction -= dt*1000;
+    const alive = players.filter(p=>p.state!=='ko');
+    if(alive.length===0) return;
+    if(e.targetX===null){
+      const target = alive[Math.floor(Math.random()*alive.length)];
+      const acc = ENEMY_ACCURACY[level-1]*UNIT_SCALE;
+      e.targetX = clamp(target.x + rand(-acc,acc), ENEMY_ZONE.xMin, ENEMY_ZONE.xMax);
+      e._targetRef = target;
+    }
+    const dx = e.targetX - e.x;
+    e.x += clamp(dx, -140*UNIT_SCALE*dt, 140*UNIT_SCALE*dt);
+    e.y = clamp(e.y + Math.sin(now/500+e.wobble)*4*dt, ENEMY_ZONE.yMin, ENEMY_ZONE.yMax);
+    if(e.nextAction<=0){
+      const target = e._targetRef && e._targetRef.state!=='ko' ? e._targetRef : alive[0];
+      const neededDist = Math.abs(target.y - e.y) + rand(-20,40);
+      const range = clamp(neededDist, minRange(), maxRange());
+      const ratio = (range-minRange())/(maxRange()-minRange());
+      throwSnowball(e, ratio);
+      const [a,b] = ENEMY_INTERVAL[level-1];
+      e.nextAction = rand(a,b);
+      e.targetX = null;
+    }
+  }
+  function updateSnowballs(dt){
+    for(let i=snowballs.length-1;i>=0;i--){
+      const s = snowballs[i];
+      s.age = (s.age||0) + dt;
+      const prevY = s.y;
+      const step = s.vy*dt;
+      s.y += step;
+      s.traveled += Math.abs(step);
+
+      const blockedBy = s.team==='enemy' ? hitsBarrierSegment(s.x, prevY, s.y) : null;
+      if(blockedBy){
+        spawnBurst(s.x, s.y);
+        flashBarrier(blockedBy);
+        snowballs.splice(i,1);
+        continue;
+      }
+
+      const targets = s.team==='ally' ? enemies : players;
+      let hit=false;
+      for(const t of targets){
+        if(t.state==='ko') continue;
+        if(Math.abs(t.x-s.x)<hitRadius() && Math.abs(t.y-s.y)<hitRadius()){ hitUnit(t); hit=true; break; }
+      }
+      if(hit || s.traveled>=s.maxDist || s.y<10 || s.y>FH-10 || s.age>4){
+        spawnBurst(s.x, s.y);
+        snowballs.splice(i,1);
+      }
+    }
+  }
+  function updateParticles(dt){
+    for(let i=particles.length-1;i>=0;i--){
+      const p = particles[i];
+      p.age += dt;
+      if(p.age>=p.life){ particles.splice(i,1); continue; }
+      p.x += p.vx*dt; p.y += p.vy*dt; p.vy += 260*UNIT_SCALE*dt;
+    }
+  }
+  function updateSnow(dt){
+    for(const f of snow){
+      f.y += f.s*dt;
+      f.x += Math.sin(f.y/40 + f.drift)*6*dt;
+      if(f.y>FH){ f.y=-5; f.x=rand(0,FW); }
+    }
+  }
+  function updateBarriers(dt){
+    for(const b of BARRIERS){ if(b.flash>0) b.flash = Math.max(0, b.flash - dt*2.2); }
+  }
+  function checkWinLose(){
+    if(gameOver || levelClearing) return;
+    if(players.every(p=>p.state==='ko')){ endGame(false); return; }
+    if(enemies.every(e=>e.state==='ko')){
+      levelClearing = true;
+      setTimeout(()=>{
+        if(level>=6){ endGame(true); }
+        else {
+          level++;
+          setupEnemiesForLevel(level);
+          players.forEach(p=>{ if(p.state!=='ko'){ p.x = clamp(p.x, ALLY_ZONE.xMin, ALLY_ZONE.xMax); } });
+          updateTopUI();
+          showLevelToast('LEVEL '+level);
+        }
+        levelClearing = false;
+      }, 900);
+      showLevelToast('LEVEL CLEAR!');
+    }
+    updateTopUI();
+  }
+
+  // ---------- render ----------
+  function drawField(){
+    const g = ctx.createLinearGradient(0,0,0,FH);
+    g.addColorStop(0,'#7fc0ef');
+    g.addColorStop(0.55,'#cfeaf9');
+    g.addColorStop(0.56,'#f2fbff');
+    g.addColorStop(1,'#ffffff');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,FW,FH);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.beginPath();
+    ctx.ellipse(FW*0.16,FH*0.40,FW*0.16,FH*0.05,0,0,Math.PI*2);
+    ctx.ellipse(FW*0.68,FH*0.38,FW*0.20,FH*0.06,0,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(140,180,210,0.5)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10,8]);
+    ctx.beginPath();
+    ctx.moveTo(20,FH*0.50); ctx.lineTo(FW-20,FH*0.50);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    for(const b of BARRIERS) drawBarrier(b);
+  }
+
+  function roundRectPath(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function drawBarrier(b){
+    ctx.save();
+    ctx.translate(b.x, b.y);
+
+    ctx.fillStyle = 'rgba(20,40,60,0.18)';
+    ctx.beginPath();
+    ctx.ellipse(0, b.h/2+8, b.w/2+16, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    const grad = ctx.createLinearGradient(0,-b.h/2,0,b.h/2);
+    grad.addColorStop(0, b.flash>0 ? '#ffe9a8' : '#ffffff');
+    grad.addColorStop(1, '#cfe6f5');
+    ctx.fillStyle = grad;
+    roundRectPath(-b.w/2,-b.h/2,b.w,b.h,14);
+    ctx.fill();
+    ctx.strokeStyle = '#8fb9d6';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.fillStyle = '#eef7fc';
+    const bumps = 6;
+    for(let i=0;i<bumps;i++){
+      const bx = -b.w/2 + (b.w/(bumps-1))*i;
+      ctx.beginPath();
+      ctx.arc(bx, -b.h/2+2, 12, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    if(b.flash>0){
+      ctx.globalAlpha = b.flash*0.6;
+      ctx.fillStyle = '#ffffff';
+      roundRectPath(-b.w/2,-b.h/2,b.w,b.h,14);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
+  function drawGauge(u, ratio){
+    const w=40*UNIT_SCALE*CHAR_SCALE, h=6*UNIT_SCALE*CHAR_SCALE;
+    const x=u.x-w/2, y=u.y-58*UNIT_SCALE*CHAR_SCALE;
+    ctx.fillStyle='rgba(10,20,30,0.55)';
+    ctx.fillRect(x,y,w,h);
+    const c = ratio<0.5?'#ffd166':(ratio<0.85?'#ff9d4d':'#ff5c5c');
+    ctx.fillStyle=c;
+    ctx.fillRect(x,y,w*ratio,h);
+    ctx.strokeStyle='#0a1926';
+    ctx.lineWidth=1.5;
+    ctx.strokeRect(x,y,w,h);
+  }
+
+  function drawBody(main,dark,skin){
+    ctx.fillStyle = '#2b3542';
+    ctx.fillRect(-10,10,7,16);
+    ctx.fillRect(3,10,7,16);
+    ctx.fillStyle = main;
+    ctx.beginPath();
+    ctx.moveTo(-15,14);
+    ctx.quadraticCurveTo(-16,-14,0,-16);
+    ctx.quadraticCurveTo(16,-14,15,14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = dark;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = main;
+    ctx.beginPath(); ctx.ellipse(-15,-2,5,10,0.3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(15,-2,5,10,-0.3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = skin;
+    ctx.beginPath();
+    ctx.arc(0,-26,11,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.ellipse(0,-33,11.5,5,0,Math.PI,Math.PI*2);
+    ctx.fill();
+    ctx.fillRect(-11.5,-33,23,4);
+    ctx.fillStyle='#2b2b2b';
+    ctx.beginPath(); ctx.arc(-3,-26,1.3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3,-26,1.3,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawUnit(u, now){
+    const isAlly = u.team==='ally';
+    const main = isAlly ? '#e0483e' : '#3f8f57';
+    const dark = isAlly ? '#a8291f' : '#256238';
+    const skin = '#ffd9b0';
+
+    ctx.save();
+    ctx.translate(u.x,u.y);
+    ctx.scale(UNIT_SCALE*CHAR_SCALE,UNIT_SCALE*CHAR_SCALE);
+
+    if(u.state==='ko'){
+      const fade = clamp(u.timer/800,0,1);
+      ctx.fillStyle='rgba(20,40,60,0.25)';
+      ctx.beginPath(); ctx.ellipse(0,18,20,7,0,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.15+0.55*fade;
+      ctx.rotate(Math.PI/2 * (isAlly?1:-1));
+      drawBody('#9aa3aa','#5d6469', skin);
+      ctx.restore();
+      return;
+    }
+    if(u.state==='down'){
+      ctx.fillStyle='rgba(20,40,60,0.22)';
+      ctx.beginPath(); ctx.ellipse(0,18,20,7,0,0,Math.PI*2); ctx.fill();
+      ctx.rotate(Math.PI/2 * (isAlly?1:-1));
+      drawBody(main, dark, skin);
+      ctx.rotate(-Math.PI/2 * (isAlly?1:-1));
+      ctx.fillStyle='#fff';
+      ctx.font='bold 13px sans-serif';
+      ctx.textAlign='center';
+      const spin = now/160;
+      for(let k=0;k<3;k++){
+        const ang = spin + k*(Math.PI*2/3);
+        ctx.fillText('✦', Math.cos(ang)*12, -34+Math.sin(ang)*6);
+      }
+      ctx.restore();
+      return;
+    }
+    if(u.state==='stunned'){
+      const wob = Math.sin(now/40)*6;
+      ctx.rotate(wob*Math.PI/180);
+    }
+    if(u.state==='shock'){
+      ctx.globalAlpha = 0.55 + 0.35*Math.sin(now/90);
+    }
+    const bob = (u.state==='idle') ? Math.sin(now/260+u.wobble)*2 : 0;
+    ctx.translate(0,bob);
+    drawBody(main, dark, skin);
+
+    if(u.state==='shock'){
+      ctx.globalAlpha = 1;
+      ctx.fillStyle='#fff';
+      ctx.font='bold 16px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('☆', 0, -52+Math.sin(now/70)*3);
+    }
+    if(u.state==='stunned'){
+      ctx.fillStyle='#fff';
+      ctx.font='bold 14px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('!', 0, -50);
+    }
+    ctx.restore();
+  }
+
+  function drawSnowballs(){
+    for(const s of snowballs){
+      const r=6*UNIT_SCALE;
+      ctx.fillStyle='#ffffff';
+      ctx.strokeStyle='#c9dcea';
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,r,0,Math.PI*2);
+      ctx.fill(); ctx.stroke();
+    }
+  }
+  function drawParticles(){
+    for(const p of particles){
+      const a = 1-p.age/p.life;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  function drawSnowfall(){
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    for(const f of snow){
+      ctx.beginPath();
+      ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+  function drawSelection(now){
+    if(dragging && selected && selected.state!=='ko'){
+      ctx.strokeStyle='rgba(255,209,102,0.9)';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(selected.x,selected.y,(20+Math.sin(now/120)*2)*UNIT_SCALE*CHAR_SCALE,0,Math.PI*2);
+      ctx.stroke();
+      if(selected.state==='shock'){
+        ctx.fillStyle='#fff';
+        ctx.font='bold '+Math.round(12*UNIT_SCALE)+'px sans-serif';
+        ctx.textAlign='center';
+        ctx.fillText('이동만 가능', selected.x, selected.y-58*UNIT_SCALE*CHAR_SCALE);
+      } else {
+        const ratio = clamp((performance.now()-chargeStart)/MAX_CHARGE_MS,0,1);
+        drawGauge(selected, ratio);
+      }
+    }
+  }
+
+  function render(now){
+    drawField();
+    const all = [...enemies, ...players].sort((a,b)=>a.y-b.y);
+    for(const u of all) drawUnit(u, now);
+    drawSnowballs();
+    drawParticles();
+    drawSelection(now);
+    drawSnowfall();
+  }
+
+  // ---------- main loop ----------
+  function loop(now){
+    const dt = Math.min((now-last)/1000, 0.04);
+    last = now;
+
+    if(!gameOver){
+      updateSnow(dt);
+      updateBarriers(dt);
+      for(const p of players) updateUnitState(p, dt);
+      for(const e of enemies){ updateUnitState(e, dt); updateEnemyAI(e, dt, now); }
+      updateSnowballs(dt);
+      updateParticles(dt);
+      checkWinLose();
+    } else {
+      updateSnow(dt);
+      updateParticles(dt);
+    }
+
+    render(now);
+    requestAnimationFrame(loop);
+  }
+
+  resizeCanvas();
+  resetGame();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
