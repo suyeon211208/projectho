@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PULSE TAP</title>
+<title>PULSE TAP — 리듬 클리커</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -453,33 +453,22 @@ html, body{
 }
 .preset-btn.active-preset .preset-bpm{ color:#00e5ff; }
 
-.song-picker{
-  width:100%;
-  max-width:320px;
-  background: var(--panel);
-  border:1px solid var(--panel-border);
-  border-radius:14px;
-  padding:14px;
-  display:flex;
-  flex-direction:column;
+.preset-btn.upload-btn{
+  border-style:dashed;
+  border-color: rgba(255,255,255,0.25);
   align-items:center;
-  gap:8px;
-  margin-bottom:2px;
+  text-align:center;
 }
-.file-label{
-  font-family:'Orbitron', sans-serif;
-  font-size:12px;
-  letter-spacing:1px;
-  color:#00e5ff;
-  background: rgba(0,229,255,0.08);
-  border:1px solid rgba(0,229,255,0.4);
-  border-radius:999px;
-  padding:9px 18px;
-  cursor:pointer;
-  transition: background .15s ease, transform .1s ease;
+.preset-btn.upload-btn .preset-name{ color:#ff2d95; }
+.preset-btn.upload-btn.active-preset{
+  border-style:solid;
+  border-color:#ff2d95;
+  background: rgba(255,45,149,0.10);
+  box-shadow: 0 0 14px rgba(255,45,149,0.25);
 }
-.file-label:active{ transform: scale(0.96); }
-#songInput{
+.preset-btn.upload-btn.active-preset .preset-bpm{ color:#ff2d95; }
+
+.hidden-file-input{
   position:absolute;
   width:1px; height:1px;
   opacity:0;
@@ -490,6 +479,7 @@ html, body{
   color: var(--ink-dim);
   margin:0;
   min-height:16px;
+  text-align:center;
 }
 .song-status.ready{ color:#7cff5e; }
 .song-status.busy{ color:#ffd400; }
@@ -699,35 +689,33 @@ html, body{
     <p class="tagline">비트에 맞춰, 빛나는 순간에 눌러라.</p>
 
     <div class="preset-picker">
-      <span class="section-label">기본 음악 (업로드 없이 바로 플레이)</span>
+      <span class="section-label">음악 선택</span>
       <div id="presetList" class="preset-list">
         <button class="preset-btn active-preset" data-preset="0">
-          <span class="preset-name">네온 드라이브</span><span class="preset-bpm">128 BPM</span>
+          <span class="preset-name">엘리제를 위하여</span><span class="preset-bpm">Beethoven</span>
         </button>
         <button class="preset-btn" data-preset="1">
-          <span class="preset-name">레트로 바이트</span><span class="preset-bpm">140 BPM</span>
+          <span class="preset-name">환희의 송가</span><span class="preset-bpm">Beethoven</span>
         </button>
         <button class="preset-btn" data-preset="2">
-          <span class="preset-name">딥 펄스</span><span class="preset-bpm">100 BPM</span>
+          <span class="preset-name">미뉴에트 in G</span><span class="preset-bpm">Bach</span>
         </button>
         <button class="preset-btn" data-preset="3">
-          <span class="preset-name">아케이드 러시</span><span class="preset-bpm">150 BPM</span>
+          <span class="preset-name">카논 in D</span><span class="preset-bpm">Pachelbel</span>
         </button>
         <button class="preset-btn" data-preset="4">
-          <span class="preset-name">칠 서킷</span><span class="preset-bpm">90 BPM</span>
+          <span class="preset-name">운명 교향곡</span><span class="preset-bpm">Beethoven</span>
+        </button>
+        <button class="preset-btn upload-btn" id="uploadPresetBtn" type="button">
+          <span class="preset-name">📁 내 파일 업로드</span><span class="preset-bpm">MP3 · 영상</span>
         </button>
       </div>
+      <input type="file" id="songInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.aac,.mp4,.mov,.webm,.m4v,audio/mpeg,audio/mp3" multiple="false" class="hidden-file-input">
+      <p id="songStatus" class="song-status">기본 음악 "엘리제를 위하여"로 진행됩니다</p>
     </div>
-
-    <div class="song-picker">
-      <label class="file-label" for="songInput">🎵 내 노래/영상으로 대체하기 (선택)</label>
-      <input type="file" id="songInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.aac,.mp4,.mov,.webm,.m4v,audio/mpeg,audio/mp3" multiple="false">
-      <p id="songStatus" class="song-status">기본 음악 "네온 드라이브"로 진행됩니다</p>
-    </div>
-
     <button id="startBtn" class="primary-btn">START</button>
-   
-  </section>
+    <button id="testSoundBtn" class="secondary-btn">🔊 사운드 테스트</button>
+      </section>
 
   <!-- 게임 오버 화면 -->
   <section id="overScreen" class="overlay hidden">
@@ -875,12 +863,21 @@ html, body{
 
   // ---------- 기본 제공 음악 5종 (업로드 없이 바로 플레이 가능) ----------
   // 실제 음원 대신 자체 신스로 생성되는 오리지널 루프 (저작권 이슈 없음)
+  // 저작권 없는(저작권 만료) 클래식 명곡 5곡 — 실제 녹음이 아닌, 유명 멜로디를 자체 신스로 연주
   const PRESET_SONGS = [
-    { name: "네온 드라이브", bpm: 128, wave: "sawtooth", scale: [261.63, 329.63, 392.00, 493.88, 523.25] },
-    { name: "레트로 바이트", bpm: 140, wave: "square",   scale: [293.66, 349.23, 440.00, 523.25, 587.33] },
-    { name: "딥 펄스",       bpm: 100, wave: "sine",     scale: [220.00, 261.63, 293.66, 349.23, 392.00] },
-    { name: "아케이드 러시", bpm: 150, wave: "sawtooth", scale: [349.23, 415.30, 466.16, 523.25, 622.25] },
-    { name: "칠 서킷",       bpm: 90,  wave: "triangle", scale: [196.00, 246.94, 293.66, 349.23, 392.00] },
+    { name: "엘리제를 위하여", bpm: 100, wave: "sine",
+      scale: [659.25, 622.25, 659.25, 622.25, 659.25, 493.88, 587.33, 523.25, 440.00,
+              261.63, 329.63, 440.00, 493.88, 329.63, 415.30, 493.88, 523.25] }, // Beethoven
+    { name: "환희의 송가", bpm: 120, wave: "square",
+      scale: [329.63, 329.63, 349.23, 392.00, 392.00, 349.23, 329.63, 293.66,
+              261.63, 261.63, 293.66, 329.63, 329.63, 293.66, 293.66] }, // Beethoven 9번 교향곡
+    { name: "미뉴에트 in G", bpm: 92, wave: "triangle",
+      scale: [587.33, 392.00, 440.00, 493.88, 523.25, 587.33, 392.00, 392.00,
+              392.00, 369.99, 329.63, 293.66, 261.63, 246.94, 220.00, 196.00] }, // Bach(Petzold)
+    { name: "카논 in D", bpm: 108, wave: "triangle",
+      scale: [293.66, 220.00, 246.94, 185.00, 196.00, 146.83, 196.00, 220.00] }, // Pachelbel
+    { name: "운명 교향곡", bpm: 150, wave: "sawtooth",
+      scale: [392.00, 392.00, 392.00, 311.13, 349.23, 349.23, 349.23, 293.66] }, // Beethoven 5번 교향곡
   ];
   let selectedPresetIndex = 0;
   let baseBeatSec = 60 / PRESET_SONGS[0].bpm;
@@ -1106,7 +1103,10 @@ html, body{
       songBuffer = decoded;
       songBeatTimes = beats;
       usingSong = true;
-      setSongStatus(`분석 완료 — 비트 ${beats.length}개 감지됨 · ${decoded.duration.toFixed(0)}초`, "ready");
+      clearPresetActiveStates();
+      const uploadBtn = document.getElementById("uploadPresetBtn");
+      if (uploadBtn) uploadBtn.classList.add("active-preset");
+      setSongStatus(`"${file.name}" 분석 완료 — 비트 ${beats.length}개 감지됨 · ${decoded.duration.toFixed(0)}초`, "ready");
     } catch (err) {
       songBuffer = null;
       songBeatTimes = null;
@@ -1522,16 +1522,29 @@ html, body{
   const testSoundBtn = document.getElementById("testSoundBtn");
   if (testSoundBtn) testSoundBtn.addEventListener("click", playTestTone);
 
-  const presetBtns = Array.from(document.querySelectorAll(".preset-btn"));
+  const presetBtns = Array.from(document.querySelectorAll(".preset-btn[data-preset]"));
+  const uploadPresetBtn = document.getElementById("uploadPresetBtn");
+
+  function clearPresetActiveStates() {
+    presetBtns.forEach(b => b.classList.remove("active-preset"));
+    if (uploadPresetBtn) uploadPresetBtn.classList.remove("active-preset");
+  }
+
   presetBtns.forEach(btn => {
     btn.addEventListener("click", () => {
       selectedPresetIndex = Number(btn.dataset.preset);
       usingSong = false; // 프리셋 선택 시 업로드된 곡 대신 프리셋 사용
-      presetBtns.forEach(b => b.classList.remove("active-preset"));
+      clearPresetActiveStates();
       btn.classList.add("active-preset");
       setSongStatus(`기본 음악 "${PRESET_SONGS[selectedPresetIndex].name}"로 진행됩니다`, "");
     });
   });
+
+  if (uploadPresetBtn) {
+    uploadPresetBtn.addEventListener("click", () => {
+      songInput.click(); // 실제 활성화 표시는 분석 성공 시 change 핸들러에서 처리
+    });
+  }
 
   // 초기 레인 상태: 3개만 보이도록
   laneEls.forEach((el, i) => {
