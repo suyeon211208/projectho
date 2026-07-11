@@ -115,6 +115,28 @@
   }
   #levelLabel span { color: #ff5c8a; }
 
+  #livesLabel {
+    font-weight: 800;
+    font-size: 18px;
+    color: #5b4636;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  #livesHearts {
+    font-size: 18px;
+    letter-spacing: 2px;
+    transition: transform 0.2s;
+  }
+  #livesHearts.shrink {
+    animation: heartLose 0.4s ease;
+  }
+  @keyframes heartLose {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
   #restartBtn {
     border: none;
     border-radius: 16px;
@@ -425,6 +447,9 @@
   <div class="panel">
     <div id="levelLabel">레벨 <span id="levelNum">1</span> / 500</div>
   </div>
+  <div class="panel">
+    <div id="livesLabel">기회 <span id="livesHearts">❤️❤️❤️</span></div>
+  </div>
   <div class="panel" id="musicPanel">
     <button id="musicToggleBtn" class="mode-btn active" title="배경음악 켜기/끄기">🔊</button>
     <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.5" title="음악 볼륨">
@@ -462,6 +487,7 @@
 
   const stage = document.getElementById('stage');
   const levelNumEl = document.getElementById('levelNum');
+  const livesHeartsEl = document.getElementById('livesHearts');
   const progressWrap = document.getElementById('progressWrap');
   const centerMsg = document.getElementById('centerMsg');
   const restartBtn = document.getElementById('restartBtn');
@@ -494,6 +520,8 @@
 
   let currentMode = 'number';
   let level = 1;
+  const MAX_LIVES = 3;
+  let lives = MAX_LIVES;
   let sequenceLength = 3;
   let targetValues = [];   // 정답 순서 (표시용 문자열)
   let nextIndex = 0;       // 다음에 눌러야 할 인덱스
@@ -706,6 +734,17 @@
 
   function updateLevelUI(){
     levelNumEl.textContent = level;
+  }
+
+  function updateLivesUI(){
+    let hearts = '';
+    for (let i=0;i<MAX_LIVES;i++){
+      hearts += (i < lives) ? '❤️' : '🤍';
+    }
+    livesHeartsEl.textContent = hearts;
+    livesHeartsEl.classList.remove('shrink');
+    void livesHeartsEl.offsetWidth;
+    livesHeartsEl.classList.add('shrink');
   }
 
   function buildProgressDots(){
@@ -980,18 +1019,33 @@
         }, 1000);
       }
     } else {
-      // 오답 -> 처음부터
+      // 오답 -> 기회 1개 차감
       b.el.classList.add('wrongShake');
       setTimeout(()=> b.el.classList.remove('wrongShake'), 400);
       gameActive = false;
       cancelAnimationFrame(rafId);
       clearTimeout(idleTimer);
       clearTimeout(hintTimer);
-      showCenterMsg('😅 다시 도전! 레벨 1부터');
-      setTimeout(()=>{
-        level = 1;
-        startLevel();
-      }, 900);
+
+      lives = Math.max(0, lives - 1);
+      updateLivesUI();
+
+      if (lives <= 0) {
+        // 기회를 모두 소진 -> 레벨 1부터 다시 시작
+        showCenterMsg('😭 기회를 모두 썼어요! 처음부터 다시!');
+        setTimeout(()=>{
+          level = 1;
+          lives = MAX_LIVES;
+          updateLivesUI();
+          startLevel();
+        }, 1000);
+      } else {
+        // 같은 레벨 재도전
+        showCenterMsg(`😅 다시 도전! (남은 기회 ${lives})`);
+        setTimeout(()=>{
+          startLevel();
+        }, 900);
+      }
     }
   }
 
@@ -1013,7 +1067,11 @@
     clearTimeout(idleTimer);
     clearTimeout(hintTimer);
     clearBalloons();
-    if (fromZeroLevel) level = 1;
+    if (fromZeroLevel) {
+      level = 1;
+      lives = MAX_LIVES;
+      updateLivesUI();
+    }
     startLevel();
   }
 
