@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>풍선 순서 맞추기 🎈</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Baloo+2:wght@500;700;800&display=swap');
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Baloo 2', 'Gaegu', sans-serif;
+    touch-action: manipulation;
+  }
+
+  body {
+    position: relative;
+    background: linear-gradient(180deg, #7fd6ff 0%, #a8e6ff 25%, #ffe9c9 60%, #ffd6e8 100%);
+  }
+
+  /* 배경 장식: 구름, 태양 */
+  .cloud {
+    position: absolute;
+    background: #fff;
+    border-radius: 50px;
+    opacity: 0.85;
+    filter: drop-shadow(0 4px 0 rgba(0,0,0,0.03));
+  }
+  .cloud::before, .cloud::after {
+    content: "";
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .sun {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff6c9, #ffd93d);
+    box-shadow: 0 0 40px 10px rgba(255, 217, 61, 0.55);
+    animation: sunPulse 3s ease-in-out infinite;
+    z-index: 1;
+  }
+  @keyframes sunPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+
+  .ground {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, #b6e78a, #8fd45f);
+    border-top: 6px solid #ffffffaa;
+    z-index: 1;
+  }
+
+  /* 상단 UI */
+  #topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .panel {
+    background: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 8px 14px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #modeButtons { gap: 6px; }
+  .mode-btn {
+    border: none;
+    border-radius: 16px;
+    padding: 8px 14px;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    background: #ffe1ec;
+    color: #ff5c8a;
+    box-shadow: 0 3px 0 #ffb8cf;
+    transition: transform 0.1s;
+  }
+  .mode-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #ffb8cf; }
+  .mode-btn.active {
+    background: linear-gradient(180deg, #ff8fb1, #ff5c8a);
+    color: #fff;
+    box-shadow: 0 3px 0 #d63d6d;
+  }
+
+  #levelLabel {
+    font-weight: 800;
+    font-size: 18px;
+    color: #5b4636;
+  }
+  #levelLabel span { color: #ff5c8a; }
+
+  #restartBtn {
+    border: none;
+    border-radius: 16px;
+    padding: 8px 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    background: #d6f5d6;
+    color: #3a9c3a;
+    box-shadow: 0 3px 0 #a7e6a7;
+  }
+  #restartBtn:active { transform: translateY(2px); box-shadow: 0 1px 0 #a7e6a7; }
+
+  /* 진행도 표시 */
+  #progressWrap {
+    position: absolute;
+    top: 66px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    max-width: 90vw;
+    background: rgba(255,255,255,0.75);
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+  .dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #ffc0d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: #ff5c8a;
+    transition: all 0.2s;
+  }
+  .dot.done {
+    background: linear-gradient(180deg, #8ee6a1, #5cd47a);
+    border-color: #3ea85b;
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  #stage {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+  }
+
+  .balloon {
+    position: absolute;
+    width: 78px;
+    height: 96px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+    filter: drop-shadow(0 6px 4px rgba(0,0,0,0.12));
+  }
+  .balloon .string {
+    position: absolute;
+    top: 96px;
+    left: 50%;
+    width: 2px;
+    height: 34px;
+    background: #cbb;
+    transform: translateX(-50%);
+    opacity: 0.6;
+  }
+  .balloon .body {
+    position: absolute;
+    inset: 0;
+    border-radius: 50% 50% 48% 48% / 58% 58% 42% 42%;
+    box-shadow: inset -8px -10px 16px rgba(0,0,0,0.12), inset 8px 8px 14px rgba(255,255,255,0.35);
+  }
+  .balloon .knot {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    transform: translateX(-50%);
+  }
+  .balloon .label {
+    position: relative;
+    z-index: 2;
+    font-weight: 800;
+    font-size: 26px;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 0 6px rgba(0,0,0,0.15);
+    font-family: 'Baloo 2','Gaegu', sans-serif;
+  }
+
+  .balloon.hint {
+    animation: hintBlink 0.35s ease-in-out infinite alternate;
+  }
+  @keyframes hintBlink {
+    from { filter: drop-shadow(0 0 4px #fff) drop-shadow(0 6px 4px rgba(0,0,0,0.12)) brightness(1); }
+    to   { filter: drop-shadow(0 0 22px #fff700) drop-shadow(0 6px 4px rgba(0,0,0,0.12)) brightness(1.3); }
+  }
+
+  .balloon.pop {
+    animation: popAway 0.26s cubic-bezier(.36,.07,.19,.97) forwards;
+    pointer-events: none;
+  }
+  @keyframes popAway {
+    0%   { transform: scale(1, 1); opacity: 1; }
+    30%  { transform: scale(1.22, 0.8); opacity: 1; }
+    55%  { transform: scale(0.55, 1.3); opacity: 0.9; }
+    100% { transform: scale(0.02, 0.02); opacity: 0; }
+  }
+
+  /* 풍선이 터질 때 나오는 조각 이펙트 */
+  .pop-ring {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    pointer-events: none;
+    animation: ringExpand 0.45s ease-out forwards;
+  }
+  @keyframes ringExpand {
+    0%   { width: 14px; height: 14px; opacity: 0.9; border-width: 5px; }
+    100% { width: 130px; height: 130px; opacity: 0; border-width: 1px; }
+  }
+
+  .pop-shard {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    transform: translate(-50%, -50%);
+    z-index: 16;
+    pointer-events: none;
+    animation: shardFly 0.55s cubic-bezier(.25,.8,.4,1) forwards;
+  }
+  @keyframes shardFly {
+    0%   { transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.25); opacity: 0; }
+  }
+
+  .pop-flash {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 70%);
+    transform: translate(-50%, -50%) scale(0.3);
+    z-index: 14;
+    pointer-events: none;
+    animation: flashPop 0.28s ease-out forwards;
+  }
+  @keyframes flashPop {
+    0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+  }
+
+  .pop-text {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.35);
+    z-index: 17;
+    pointer-events: none;
+    animation: popTextFloat 0.6s ease-out forwards;
+  }
+  @keyframes popTextFloat {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    30%  { opacity: 1; transform: translate(-50%, -75%) scale(1.25); }
+    100% { opacity: 0; transform: translate(-50%, -140%) scale(1); }
+  }
+
+  .balloon.wrongShake {
+    animation: shakeWrong 0.4s;
+  }
+  @keyframes shakeWrong {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-10px) rotate(-6deg); }
+    40% { transform: translateX(10px) rotate(6deg); }
+    60% { transform: translateX(-8px) rotate(-4deg); }
+    80% { transform: translateX(8px) rotate(4deg); }
+  }
+
+  /* 메시지 오버레이 */
+  #centerMsg {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    z-index: 40;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    color: #fff;
+    text-shadow: 0 4px 0 rgba(0,0,0,0.15);
+    background: linear-gradient(135deg, #ff9ec4, #ffd36e);
+    padding: 18px 34px;
+    border-radius: 30px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+    opacity: 0;
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+  }
+  #centerMsg.show {
+    animation: popMsg 1.1s ease forwards;
+  }
+  @keyframes popMsg {
+    0% { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+    15% { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+    25% { transform: translate(-50%,-50%) scale(1); }
+    80% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(0.9); }
+  }
+
+  /* 반짝이 파티클 (레벨업) */
+  .confetti {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    z-index: 39;
+    animation: confettiFall 1.1s ease-in forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(220px) rotate(400deg); opacity: 0; }
+  }
+
+  #startOverlay {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, #7fd6ff, #ffd6e8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    text-align: center;
+    padding: 20px;
+  }
+  #startOverlay h1 {
+    font-size: 40px;
+    color: #ff5c8a;
+    text-shadow: 0 4px 0 #fff, 0 6px 6px rgba(0,0,0,0.1);
+    margin: 0;
+  }
+  #startOverlay p {
+    font-size: 18px;
+    color: #5b4636;
+    max-width: 420px;
+    line-height: 1.5;
+    margin: 0;
+  }
+  #startBtn {
+    border: none;
+    border-radius: 26px;
+    padding: 16px 44px;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: #fff;
+    background: linear-gradient(180deg, #ff8fb1, #ff5c8a);
+    box-shadow: 0 6px 0 #d63d6d;
+    cursor: pointer;
+  }
+  #startBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 #d63d6d; }
+
+  #startModeChoice { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+</style>
+</head>
+<body>
+
+<div class="sun"></div>
+<div class="cloud" style="top:70px; left:6%; width:90px; height:34px;"></div>
+<div class="cloud" style="top:120px; left:70%; width:110px; height:40px;"></div>
+<div class="ground"></div>
+
+<div id="topbar">
+  <div class="panel" id="modeButtons">
+    <button class="mode-btn" data-mode="number">🔢 숫자</button>
+    <button class="mode-btn" data-mode="hangul">🇰🇷 한글</button>
+    <button class="mode-btn" data-mode="english">🔤 영어</button>
+  </div>
+  <div class="panel">
+    <div id="levelLabel">레벨 <span id="levelNum">1</span> / 500</div>
+  </div>
+  <div class="panel">
+    <button id="restartBtn">🔄 처음부터</button>
+  </div>
+</div>
+
+<div id="progressWrap"></div>
+
+<div id="stage"></div>
+
+<div id="centerMsg"></div>
+
+<div id="startOverlay">
+  <h1>🎈 풍선 순서 맞추기</h1>
+  <p>순서대로 풍선을 톡톡 터뜨려봐요!<br>
+     숫자, 한글, 영어 중 원하는 모드를 고르고 시작하세요.<br>
+     틀리면 처음(레벨 1)부터 다시 시작해요. 화이팅! 💪</p>
+  <div id="startModeChoice">
+    <button class="mode-btn active" data-mode="number">🔢 숫자</button>
+    <button class="mode-btn" data-mode="hangul">🇰🇷 한글</button>
+    <button class="mode-btn" data-mode="english">🔤 영어</button>
+  </div>
+  <button id="startBtn">시작하기 ▶</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const stage = document.getElementById('stage');
+  const levelNumEl = document.getElementById('levelNum');
+  const progressWrap = document.getElementById('progressWrap');
+  const centerMsg = document.getElementById('centerMsg');
+  const restartBtn = document.getElementById('restartBtn');
+  const modeButtonsWrap = document.getElementById('modeButtons');
+  const startOverlay = document.getElementById('startOverlay');
+  const startModeChoice = document.getElementById('startModeChoice');
+  const startBtn = document.getElementById('startBtn');
+
+  const MAX_LEVEL = 500;
+  const BALLOON_COLORS = [
+    ['#ff8fa3', '#ff5c7d'],
+    ['#8fd3ff', '#4fb0ff'],
+    ['#ffe08f', '#ffc93c'],
+    ['#b6f0a1', '#7fdc5f'],
+    ['#d6a1ff', '#a85cff'],
+    ['#ffbf8f', '#ff8a3c'],
+    ['#a1f0e0', '#4fd6bd'],
+  ];
+
+  const HANGUL_SEQ = ['가','나','다','라','마','바','사','아','자','차','카','타','파','하','거','너','더','러','머','버'];
+  const ENGLISH_SEQ = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+
+  // 모드별 최대 시퀀스 길이 (풀 크기에 맞춰 제한)
+  const MODE_MAX_LENGTH = { number: 30, hangul: 20, english: 26 };
+
+  let currentMode = 'number';
+  let level = 1;
+  let sequenceLength = 3;
+  let targetValues = [];   // 정답 순서 (표시용 문자열)
+  let nextIndex = 0;       // 다음에 눌러야 할 인덱스
+  let balloons = [];       // {el, value, isTarget, x, y, vy, wobble, wobbleSpeed}
+  let rafId = null;
+  let idleTimer = null;
+  let hintTimer = null;
+  let gameActive = false;
+
+  function setActiveModeButtons(container, mode){
+    container.querySelectorAll('.mode-btn').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+  }
+
+  modeButtonsWrap.querySelectorAll('.mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentMode = btn.dataset.mode;
+      setActiveModeButtons(modeButtonsWrap, currentMode);
+      resetGame(true);
+    });
+  });
+
+  startModeChoice.querySelectorAll('.mode-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentMode = btn.dataset.mode;
+      setActiveModeButtons(startModeChoice, currentMode);
+    });
+  });
+
+  startBtn.addEventListener('click', ()=>{
+    setActiveModeButtons(modeButtonsWrap, currentMode);
+    startOverlay.style.display = 'none';
+    gameActive = true;
+    resetGame(true);
+  });
+
+  restartBtn.addEventListener('click', ()=>{
+    resetGame(true);
+  });
+
+  function getSequenceLength(lv, mode){
+    // 레벨 1은 3개로 시작해서, 레벨이 2씩 오를 때마다 1개씩 늘어남
+    // 각 모드의 풀 크기(MODE_MAX_LENGTH)에 도달하면 더 늘지 않음
+    const raw = 3 + Math.floor((lv - 1) / 2);
+    const cap = MODE_MAX_LENGTH[mode] || 10;
+    return Math.min(raw, cap);
+  }
+
+  function getDecoyCount(lv){
+    // 레벨이 오를수록 헷갈리는 풍선(관련없는 값) 개수 증가, 최대 5개
+    return Math.min(Math.floor(lv / 60), 5);
+  }
+
+  function getBalloonSpeed(lv){
+    // 레벨이 오를수록 풍선이 훨씬 빨리 올라감 (레벨 1: 느긋 ~ 레벨 500: 매우 빠름)
+    const base = 0.35;
+    const ratio = Math.min(lv / 500, 1);
+    const bonus = ratio * 1.45;
+    return base + bonus;
+  }
+
+  function getSequenceValues(mode, length){
+    if (mode === 'number') {
+      const arr = [];
+      for (let i=1;i<=length;i++) arr.push(String(i));
+      return arr;
+    } else if (mode === 'hangul') {
+      return HANGUL_SEQ.slice(0, length);
+    } else {
+      return ENGLISH_SEQ.slice(0, length);
+    }
+  }
+
+  function getDecoyPool(mode, excludeValues){
+    let pool;
+    if (mode === 'number') {
+      pool = [];
+      for (let i=1;i<=45;i++) pool.push(String(i));
+    } else if (mode === 'hangul') {
+      pool = ['가','나','다','라','마','바','사','아','자','차','카','타','파','하','거','너','더','러','머','버','서','어','저','처','커','터','퍼','허'];
+    } else {
+      pool = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+    }
+    return pool.filter(v => !excludeValues.includes(v));
+  }
+
+  function updateLevelUI(){
+    levelNumEl.textContent = level;
+  }
+
+  function buildProgressDots(){
+    progressWrap.innerHTML = '';
+    targetValues.forEach((val, i)=>{
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.dataset.idx = i;
+      dot.textContent = (i+1);
+      progressWrap.appendChild(dot);
+    });
+  }
+
+  function markProgress(idx){
+    const dot = progressWrap.querySelector(`.dot[data-idx="${idx}"]`);
+    if (dot) dot.classList.add('done');
+  }
+
+  function clearProgress(){
+    progressWrap.querySelectorAll('.dot').forEach(d=>d.classList.remove('done'));
+  }
+
+  function showCenterMsg(text){
+    centerMsg.textContent = text;
+    centerMsg.classList.remove('show');
+    void centerMsg.offsetWidth; // reflow to restart animation
+    centerMsg.classList.add('show');
+  }
+
+  function spawnConfetti(){
+    const colors = ['#ff8fa3','#8fd3ff','#ffe08f','#b6f0a1','#d6a1ff','#ffbf8f'];
+    for (let i=0;i<24;i++){
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = (45 + Math.random()*10) + '%';
+      c.style.top = '40%';
+      c.style.background = colors[Math.floor(Math.random()*colors.length)];
+      c.style.transform = `translate(${(Math.random()-0.5)*260}px, 0)`;
+      c.style.animationDelay = (Math.random()*0.15)+'s';
+      stage.appendChild(c);
+      setTimeout(()=>c.remove(), 1400);
+    }
+  }
+
+  function clearBalloons(){
+    balloons.forEach(b => b.el.remove());
+    balloons = [];
+  }
+
+  function randomColorPair(){
+    return BALLOON_COLORS[Math.floor(Math.random()*BALLOON_COLORS.length)];
+  }
+
+  function createBalloonEl(value){
+    const el = document.createElement('div');
+    el.className = 'balloon';
+    const [c1, c2] = randomColorPair();
+    el.innerHTML = `
+      <div class="string"></div>
+      <div class="knot" style="border-top:8px solid ${c2};"></div>
+      <div class="body" style="background: radial-gradient(circle at 35% 28%, ${c1}, ${c2});"></div>
+      <div class="label">${value}</div>
+    `;
+    return { el, c1, c2 };
+  }
+
+  function spawnPopBurst(cx, cy, color){
+    // 밝은 플래시
+    const flash = document.createElement('div');
+    flash.className = 'pop-flash';
+    flash.style.left = cx + 'px';
+    flash.style.top = cy + 'px';
+    stage.appendChild(flash);
+    setTimeout(()=> flash.remove(), 320);
+
+    // 확산 링
+    const ring = document.createElement('div');
+    ring.className = 'pop-ring';
+    ring.style.left = cx + 'px';
+    ring.style.top = cy + 'px';
+    ring.style.borderColor = color;
+    stage.appendChild(ring);
+    setTimeout(()=> ring.remove(), 500);
+
+    // 사방으로 튀는 조각들
+    const shardCount = 12;
+    for (let i=0;i<shardCount;i++){
+      const shard = document.createElement('div');
+      shard.className = 'pop-shard';
+      const angle = (Math.PI * 2 * i / shardCount) + (Math.random()-0.5)*0.5;
+      const dist = 36 + Math.random()*46;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 10; // 살짝 위로
+      shard.style.left = cx + 'px';
+      shard.style.top = cy + 'px';
+      shard.style.background = color;
+      shard.style.setProperty('--dx', dx + 'px');
+      shard.style.setProperty('--dy', dy + 'px');
+      shard.style.setProperty('--rot', (Math.random()*360) + 'deg');
+      if (Math.random() > 0.5) shard.style.borderRadius = '50%';
+      stage.appendChild(shard);
+      setTimeout(()=> shard.remove(), 600);
+    }
+
+    // "펑!" 텍스트
+    const txt = document.createElement('div');
+    txt.className = 'pop-text';
+    txt.textContent = '펑! 🎈';
+    txt.style.left = cx + 'px';
+    txt.style.top = cy + 'px';
+    stage.appendChild(txt);
+    setTimeout(()=> txt.remove(), 650);
+  }
+
+  const BALLOON_W = 78;
+  const BALLOON_H = 96;
+  const BALLOON_GAP = 16;
+
+  function shuffleArray(arr){
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function spawnLevelBalloons(){
+    clearBalloons();
+    const decoyCount = getDecoyCount(level);
+    const decoyPool = getDecoyPool(currentMode, targetValues);
+    const decoyValues = [];
+    for (let i=0;i<decoyCount && decoyPool.length>0;i++){
+      const idx = Math.floor(Math.random()*decoyPool.length);
+      decoyValues.push(decoyPool.splice(idx,1)[0]);
+    }
+
+    const allValues = shuffleArray(
+      targetValues.map(v => ({value:v, isTarget:true}))
+        .concat(decoyValues.map(v => ({value:v, isTarget:false})))
+    );
+
+    const stageW = stage.clientWidth;
+    const stageH = stage.clientHeight;
+    const speed = getBalloonSpeed(level);
+
+    // 풍선이 서로 겹치지 않도록 화면을 세로 레인(컬럼)으로 나눔
+    const maxColumns = Math.max(3, Math.floor(stageW / (BALLOON_W + BALLOON_GAP)));
+    const columns = Math.min(allValues.length, maxColumns);
+    const colWidth = stageW / columns;
+    const maxWobble = Math.max(0, (colWidth - BALLOON_W) / 2 - 6);
+
+    const columnCounts = new Array(columns).fill(0);
+
+    allValues.forEach((item, i)=>{
+      const { el, c1, c2 } = createBalloonEl(item.value);
+      const col = i % columns;
+      const orderInCol = columnCounts[col]++;
+      const colCenterX = col * colWidth + (colWidth - BALLOON_W) / 2;
+      const y = stageH - 20 - orderInCol * (BALLOON_H + BALLOON_GAP) - Math.random()*30;
+
+      el.style.left = colCenterX + 'px';
+      el.style.top = y + 'px';
+      stage.appendChild(el);
+
+      const balloonData = {
+        el, value: item.value, isTarget: item.isTarget,
+        y,
+        col,
+        colCenterX,
+        vy: speed * (0.85 + Math.random()*0.4),
+        wobblePhase: Math.random()*Math.PI*2,
+        wobbleSpeed: 0.015 + Math.random()*0.01,
+        wobbleAmp: Math.min(maxWobble, 10 + Math.random()*8),
+        baseX: colCenterX,
+        colorMain: c2
+      };
+      el.addEventListener('click', ()=> handleBalloonClick(balloonData));
+      el.addEventListener('touchstart', (e)=>{ e.preventDefault(); handleBalloonClick(balloonData); }, {passive:false});
+      balloons.push(balloonData);
+    });
+  }
+
+  // 같은 레인(컬럼)에서 아직 화면에 남아있는 풍선과 겹치지 않는 재등장 y값 계산
+  function computeRespawnY(target, stageH){
+    let candidate = stageH + 10 + Math.random()*20;
+    balloons.forEach(other=>{
+      if (other === target) return;
+      if (other.col !== target.col) return;
+      if (other.el.classList.contains('pop')) return;
+      if (Math.abs(other.y - candidate) < (BALLOON_H + BALLOON_GAP)) {
+        candidate = other.y + BALLOON_H + BALLOON_GAP;
+      }
+    });
+    return candidate;
+  }
+
+  function animate(){
+    const stageH = stage.clientHeight;
+    balloons.forEach(b=>{
+      b.y -= b.vy;
+      b.wobblePhase += b.wobbleSpeed;
+      const wobbleX = Math.sin(b.wobblePhase) * b.wobbleAmp;
+      if (b.y < -110) {
+        // 선택되지 않고 위로 사라진 풍선은 같은 레인에서 겹치지 않는 자리로 즉시 재등장
+        b.y = computeRespawnY(b, stageH);
+      }
+      b.el.style.top = b.y + 'px';
+      b.el.style.left = (b.baseX + wobbleX) + 'px';
+    });
+    rafId = requestAnimationFrame(animate);
+  }
+
+
+  function resetIdleTimer(){
+    clearTimeout(idleTimer);
+    clearTimeout(hintTimer);
+    balloons.forEach(b => b.el.classList.remove('hint'));
+    if (!gameActive) return;
+    idleTimer = setTimeout(()=>{
+      showHint();
+    }, 3000);
+  }
+
+  function showHint(){
+    if (!gameActive) return;
+    const targetVal = targetValues[nextIndex];
+    const targetBalloon = balloons.find(b => b.isTarget && b.value === targetVal && !b.el.classList.contains('pop'));
+    if (targetBalloon) {
+      targetBalloon.el.classList.add('hint');
+      hintTimer = setTimeout(()=>{
+        targetBalloon.el.classList.remove('hint');
+        resetIdleTimer();
+      }, 1200);
+    } else {
+      resetIdleTimer();
+    }
+  }
+
+  function handleBalloonClick(b){
+    if (!gameActive) return;
+    if (b.el.classList.contains('pop')) return;
+
+    const expectedValue = targetValues[nextIndex];
+
+    if (b.isTarget && b.value === expectedValue) {
+      // 정답! 풍선 중심 좌표를 구해서 터짐 이펙트 발생
+      const stageRect = stage.getBoundingClientRect();
+      const balloonRect = b.el.getBoundingClientRect();
+      const cx = balloonRect.left + balloonRect.width / 2 - stageRect.left;
+      const cy = balloonRect.top + balloonRect.height / 2 - stageRect.top;
+      spawnPopBurst(cx, cy, b.colorMain || '#ff8fb1');
+
+      b.el.classList.add('pop');
+      markProgress(nextIndex);
+      nextIndex++;
+      resetIdleTimer();
+
+      if (nextIndex >= targetValues.length) {
+        // 레벨 클리어
+        gameActive = false;
+        cancelAnimationFrame(rafId);
+        clearTimeout(idleTimer);
+        clearTimeout(hintTimer);
+        spawnConfetti();
+        showCenterMsg('🎉 레벨 클리어! 🎉');
+        setTimeout(()=>{
+          level = Math.min(level + 1, MAX_LEVEL);
+          if (level >= MAX_LEVEL) {
+            showCenterMsg('🏆 최고 레벨 달성! 🏆');
+          }
+          startLevel();
+        }, 1000);
+      }
+    } else {
+      // 오답 -> 처음부터
+      b.el.classList.add('wrongShake');
+      setTimeout(()=> b.el.classList.remove('wrongShake'), 400);
+      gameActive = false;
+      cancelAnimationFrame(rafId);
+      clearTimeout(idleTimer);
+      clearTimeout(hintTimer);
+      showCenterMsg('😅 다시 도전! 레벨 1부터');
+      setTimeout(()=>{
+        level = 1;
+        startLevel();
+      }, 900);
+    }
+  }
+
+  function startLevel(){
+    updateLevelUI();
+    sequenceLength = getSequenceLength(level, currentMode);
+    targetValues = getSequenceValues(currentMode, sequenceLength);
+    nextIndex = 0;
+    buildProgressDots();
+    spawnLevelBalloons();
+    gameActive = true;
+    cancelAnimationFrame(rafId);
+    animate();
+    resetIdleTimer();
+  }
+
+  function resetGame(fromZeroLevel){
+    cancelAnimationFrame(rafId);
+    clearTimeout(idleTimer);
+    clearTimeout(hintTimer);
+    clearBalloons();
+    if (fromZeroLevel) level = 1;
+    startLevel();
+  }
+
+  window.addEventListener('resize', ()=>{
+    // 화면 크기 변화시 풍선 위치만 자연스럽게 유지 (재배치는 다음 wrap에서)
+  });
+
+})();
+</script>
+
+</body>
+</html>
