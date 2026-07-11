@@ -24,6 +24,28 @@
     background: linear-gradient(180deg, #7fd6ff 0%, #a8e6ff 25%, #ffe9c9 60%, #ffd6e8 100%);
   }
 
+  #cameraBg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* 거울처럼 좌우 반전 (셀카 느낌) */
+    z-index: 0;
+    display: none;
+    background: #222;
+  }
+
+  /* 카메라 배경이 켜지면 그림 배경 요소들은 숨김 */
+  body.camera-bg-active .sun,
+  body.camera-bg-active .cloud,
+  body.camera-bg-active .ground {
+    display: none;
+  }
+  body.camera-bg-active #stage {
+    background: transparent;
+  }
+
   /* 배경 장식: 구름, 태양 */
   .cloud {
     position: absolute;
@@ -152,6 +174,8 @@
 
   #musicPanel { flex-wrap: wrap; }
   #musicPanel .mode-btn { padding: 8px 12px; font-size: 14px; }
+  #bgPanel { flex-wrap: wrap; }
+  #bgPanel .mode-btn { padding: 8px 12px; font-size: 14px; }
   #volumeSlider {
     width: 80px;
     accent-color: #ff5c8a;
@@ -433,6 +457,8 @@
 </head>
 <body>
 
+<video id="cameraBg" autoplay playsinline muted></video>
+
 <div class="sun"></div>
 <div class="cloud" style="top:70px; left:6%; width:90px; height:34px;"></div>
 <div class="cloud" style="top:120px; left:70%; width:110px; height:40px;"></div>
@@ -449,6 +475,10 @@
   </div>
   <div class="panel">
     <div id="livesLabel">기회 <span id="livesHearts">❤️❤️❤️</span></div>
+  </div>
+  <div class="panel" id="bgPanel">
+    <button id="bgDefaultBtn" class="mode-btn active" title="기본 배경으로 보기">🌤️ 기본배경</button>
+    <button id="bgCameraBtn" class="mode-btn" title="내 카메라를 배경으로 보기">📷 카메라배경</button>
   </div>
   <div class="panel" id="musicPanel">
     <button id="musicToggleBtn" class="mode-btn active" title="배경음악 켜기/끄기">🔊</button>
@@ -500,6 +530,9 @@
   const musicFileInput = document.getElementById('musicFileInput');
   const musicFileLabel = document.getElementById('musicFileLabel');
   const resetMusicBtn = document.getElementById('resetMusicBtn');
+  const bgDefaultBtn = document.getElementById('bgDefaultBtn');
+  const bgCameraBtn = document.getElementById('bgCameraBtn');
+  const cameraBgEl = document.getElementById('cameraBg');
 
   const MAX_LEVEL = 500;
   const BALLOON_COLORS = [
@@ -685,6 +718,65 @@
     startMusic();
   });
   /* =============== 배경음악 끝 =============== */
+
+  /* ================= 카메라 배경 ================= */
+  let cameraStream = null;
+  let bgMode = 'default';
+
+  function setBgButtonsActive(){
+    bgDefaultBtn.classList.toggle('active', bgMode === 'default');
+    bgCameraBtn.classList.toggle('active', bgMode === 'camera');
+  }
+
+  function stopCameraStream(){
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+    }
+    cameraBgEl.srcObject = null;
+  }
+
+  async function enableCameraBackground(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('이 브라우저나 환경에서는 카메라를 사용할 수 없어요.\n(파일을 직접 열었다면 http(s) 서버로 실행해야 카메라 권한을 쓸 수 있어요.)');
+      return;
+    }
+    const ok = confirm('카메라를 배경으로 사용하려면 카메라 접근을 허용해야 해요.\n영상은 저장되거나 어디로도 전송되지 않고, 이 화면에만 보여요.\n계속할까요?');
+    if (!ok) return;
+
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false
+      });
+      cameraBgEl.srcObject = cameraStream;
+      cameraBgEl.style.display = 'block';
+      document.body.classList.add('camera-bg-active');
+      bgMode = 'camera';
+      setBgButtonsActive();
+    } catch (err) {
+      alert('카메라를 사용할 수 없어요. 권한을 허용했는지 확인해주세요.');
+      bgMode = 'default';
+      setBgButtonsActive();
+    }
+  }
+
+  function disableCameraBackground(){
+    stopCameraStream();
+    cameraBgEl.style.display = 'none';
+    document.body.classList.remove('camera-bg-active');
+    bgMode = 'default';
+    setBgButtonsActive();
+  }
+
+  bgCameraBtn.addEventListener('click', ()=>{
+    if (bgMode !== 'camera') enableCameraBackground();
+  });
+
+  bgDefaultBtn.addEventListener('click', ()=>{
+    if (bgMode !== 'default') disableCameraBackground();
+  });
+  /* =============== 카메라 배경 끝 =============== */
 
   function getSequenceLength(lv, mode){
     // 레벨 1은 3개로 시작해서, 레벨이 2씩 오를 때마다 1개씩 늘어남
