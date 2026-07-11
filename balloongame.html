@@ -128,6 +128,15 @@
   }
   #restartBtn:active { transform: translateY(2px); box-shadow: 0 1px 0 #a7e6a7; }
 
+  #musicPanel { flex-wrap: wrap; }
+  #musicPanel .mode-btn { padding: 8px 12px; font-size: 14px; }
+  #volumeSlider {
+    width: 80px;
+    accent-color: #ff5c8a;
+    cursor: pointer;
+  }
+  #musicFileLabel { display: inline-flex; align-items: center; }
+
   /* 진행도 표시 */
   #progressWrap {
     position: absolute;
@@ -416,6 +425,13 @@
   <div class="panel">
     <div id="levelLabel">레벨 <span id="levelNum">1</span> / 500</div>
   </div>
+  <div class="panel" id="musicPanel">
+    <button id="musicToggleBtn" class="mode-btn active" title="배경음악 켜기/끄기">🔊</button>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.5" title="음악 볼륨">
+    <label id="musicFileLabel" for="musicFileInput" class="mode-btn" title="내 음악 파일로 바꾸기">🎵 내 음악</label>
+    <input type="file" id="musicFileInput" accept="audio/*" style="display:none;">
+    <button id="resetMusicBtn" class="mode-btn" style="display:none;" title="기본 노래로 되돌리기">↩️ 기본곡</button>
+  </div>
   <div class="panel">
     <button id="restartBtn">🔄 처음부터</button>
   </div>
@@ -453,6 +469,11 @@
   const startOverlay = document.getElementById('startOverlay');
   const startModeChoice = document.getElementById('startModeChoice');
   const startBtn = document.getElementById('startBtn');
+  const musicToggleBtn = document.getElementById('musicToggleBtn');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const musicFileInput = document.getElementById('musicFileInput');
+  const musicFileLabel = document.getElementById('musicFileLabel');
+  const resetMusicBtn = document.getElementById('resetMusicBtn');
 
   const MAX_LEVEL = 500;
   const BALLOON_COLORS = [
@@ -508,11 +529,134 @@
     startOverlay.style.display = 'none';
     gameActive = true;
     resetGame(true);
+    startMusic(); // 사용자 클릭(제스처) 시점에 오디오 시작 - 브라우저 자동재생 정책 대응
   });
 
   restartBtn.addEventListener('click', ()=>{
     resetGame(true);
   });
+
+  /* ================= 배경음악 ================= */
+  // 기본 귀여운 배경음악: "반짝반짝 작은 별" 멜로디를 웹오디오로 직접 연주해서 루프
+  const DEFAULT_MELODY = [
+    {f:261.63, d:0.34}, {f:261.63, d:0.34}, {f:392.00, d:0.34}, {f:392.00, d:0.34},
+    {f:440.00, d:0.34}, {f:440.00, d:0.34}, {f:392.00, d:0.68},
+    {f:349.23, d:0.34}, {f:349.23, d:0.34}, {f:329.63, d:0.34}, {f:329.63, d:0.34},
+    {f:293.66, d:0.34}, {f:293.66, d:0.34}, {f:261.63, d:0.68},
+    {f:392.00, d:0.34}, {f:392.00, d:0.34}, {f:349.23, d:0.34}, {f:349.23, d:0.34},
+    {f:329.63, d:0.34}, {f:329.63, d:0.34}, {f:293.66, d:0.68},
+  ];
+
+  let audioCtx = null;
+  let masterGain = null;
+  let musicEnabled = true;
+  let usingCustomTrack = false;
+  let customAudioEl = null;
+  let melodyLoopTimer = null;
+  let melodyRunning = false;
+
+  function ensureAudioCtx(){
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = parseFloat(volumeSlider.value);
+      masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  function playSynthNote(freq, startTime, dur){
+    const osc = audioCtx.createOscillator();
+    const noteGain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    noteGain.gain.setValueAtTime(0.0001, startTime);
+    noteGain.gain.linearRampToValueAtTime(0.85, startTime + 0.03);
+    noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + dur * 0.9);
+    osc.connect(noteGain);
+    noteGain.connect(masterGain);
+    osc.start(startTime);
+    osc.stop(startTime + dur + 0.05);
+  }
+
+  function scheduleDefaultMelodyLoop(){
+    if (usingCustomTrack || !musicEnabled) return;
+    melodyRunning = true;
+    let t = audioCtx.currentTime + 0.05;
+    DEFAULT_MELODY.forEach(n=>{
+      playSynthNote(n.f, t, n.d);
+      t += n.d;
+    });
+    const totalDur = DEFAULT_MELODY.reduce((sum,n)=> sum + n.d, 0);
+    melodyLoopTimer = setTimeout(()=>{
+      if (melodyRunning) scheduleDefaultMelodyLoop();
+    }, totalDur * 1000);
+  }
+
+  function stopDefaultMelodyLoop(){
+    melodyRunning = false;
+    clearTimeout(melodyLoopTimer);
+  }
+
+  function startMusic(){
+    if (!musicEnabled) return;
+    ensureAudioCtx();
+    if (usingCustomTrack && customAudioEl) {
+      stopDefaultMelodyLoop();
+      customAudioEl.volume = parseFloat(volumeSlider.value);
+      customAudioEl.play().catch(()=>{ /* 자동재생 제한 시 무시 */ });
+    } else {
+      if (!melodyRunning) scheduleDefaultMelodyLoop();
+    }
+  }
+
+  function stopMusic(){
+    stopDefaultMelodyLoop();
+    if (customAudioEl) customAudioEl.pause();
+  }
+
+  musicToggleBtn.addEventListener('click', ()=>{
+    musicEnabled = !musicEnabled;
+    musicToggleBtn.textContent = musicEnabled ? '🔊' : '🔇';
+    musicToggleBtn.classList.toggle('active', musicEnabled);
+    if (musicEnabled) startMusic();
+    else stopMusic();
+  });
+
+  volumeSlider.addEventListener('input', ()=>{
+    const v = parseFloat(volumeSlider.value);
+    if (masterGain) masterGain.gain.value = v;
+    if (customAudioEl) customAudioEl.volume = v;
+  });
+
+  musicFileInput.addEventListener('change', (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    ensureAudioCtx();
+    stopMusic();
+    if (customAudioEl) {
+      customAudioEl.pause();
+      URL.revokeObjectURL(customAudioEl.src);
+    }
+    const url = URL.createObjectURL(file);
+    customAudioEl = new Audio(url);
+    customAudioEl.loop = true;
+    customAudioEl.volume = parseFloat(volumeSlider.value);
+    usingCustomTrack = true;
+    musicFileLabel.textContent = '🎵 ' + file.name;
+    resetMusicBtn.style.display = 'inline-block';
+    startMusic();
+  });
+
+  resetMusicBtn.addEventListener('click', ()=>{
+    if (customAudioEl) customAudioEl.pause();
+    usingCustomTrack = false;
+    musicFileLabel.textContent = '🎵 내 음악';
+    resetMusicBtn.style.display = 'none';
+    startMusic();
+  });
+  /* =============== 배경음악 끝 =============== */
 
   function getSequenceLength(lv, mode){
     // 레벨 1은 3개로 시작해서, 레벨이 2씩 오를 때마다 1개씩 늘어남
@@ -528,8 +672,8 @@
   }
 
   function getBalloonSpeed(lv){
-    // 레벨이 오를수록 풍선이 훨씬 빨리 올라감 (레벨 1: 느긋 ~ 레벨 500: 매우 빠름)
-    const base = 0.35;
+    // 레벨이 오를수록 풍선이 훨씬 빨리 올라감 (레벨 1도 이제 좀 더 활발하게 시작)
+    const base = 0.6;
     const ratio = Math.min(lv / 500, 1);
     const bonus = ratio * 1.45;
     return base + bonus;
@@ -720,7 +864,7 @@
       const col = i % columns;
       const orderInCol = columnCounts[col]++;
       const colCenterX = col * colWidth + (colWidth - BALLOON_W) / 2;
-      const y = stageH - 20 - orderInCol * (BALLOON_H + BALLOON_GAP) - Math.random()*30;
+      const y = stageH - 100 - orderInCol * (BALLOON_H + BALLOON_GAP) - Math.random()*30;
 
       el.style.left = colCenterX + 'px';
       el.style.top = y + 'px';
@@ -746,7 +890,7 @@
 
   // 같은 레인(컬럼)에서 아직 화면에 남아있는 풍선과 겹치지 않는 재등장 y값 계산
   function computeRespawnY(target, stageH){
-    let candidate = stageH + 10 + Math.random()*20;
+    let candidate = stageH - 70 + Math.random()*20;
     balloons.forEach(other=>{
       if (other === target) return;
       if (other.col !== target.col) return;
