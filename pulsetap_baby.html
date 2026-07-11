@@ -923,7 +923,7 @@ html, body{
       <p id="songStatus" class="song-status">기본 음악 "엘리제를 위하여"로 진행됩니다</p>
     </div>
     <button id="startBtn" class="primary-btn">START</button>
-     </section>
+      </section>
 
   <!-- 게임 오버 화면 -->
   <section id="overScreen" class="overlay hidden">
@@ -1047,9 +1047,16 @@ html, body{
   }
 
   // 한 박자(비트) 시점에 노트 1~2개를 생성 (레벨20부터 확률적으로 동시 2개)
+  let lastSpawnedHitTime = -Infinity; // 마지막으로 생성한 노트의 판정 시각 (동시 등장 개수 제한용)
+
   function spawnNotesForBeat(level, hitTime, windowHalf) {
     const chance = spawnChanceForLevel(level);
     if (Math.random() >= chance) return;
+
+    // 화면에 한 번에 너무 많은 블록이 보이지 않도록, 이전 노트와 최소 간격을 둔 뒤에만 새로 생성
+    const minGap = FALL_DURATION_SEC * 0.55;
+    if (hitTime - lastSpawnedHitTime < minGap) return;
+    lastSpawnedHitTime = hitTime;
 
     const laneCount = laneCountForLevel(level);
     const lane1 = Math.floor(Math.random() * laneCount);
@@ -1980,6 +1987,7 @@ html, body{
     beatCount = 0;
     successfulHits = 0;
     songNextBeatIndex = 0;
+    lastSpawnedHitTime = -Infinity;
     clearComboGold();
 
     levelEl.textContent = "01";
