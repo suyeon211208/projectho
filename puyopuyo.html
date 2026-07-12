@@ -483,9 +483,11 @@
   let piece;
   let nextColors;
   let score = 0;
+  let totalScore = 0;
   let level = 1;
   let elapsedMs = 0;
-  const LEVEL_STEP = 1000;   // score needed per level
+  const LEVEL_BASE_STEP = 800;   // score needed to reach level 2
+  const LEVEL_STEP_INCREMENT = 150; // each further level needs this much more than the previous
   const MAX_LEVEL = 500;
   const STAGE_SIZE = 5;      // every 5 levels = 1 stage clear
   let dropTimer = 0;
@@ -543,6 +545,7 @@
     popping = new Set();
     particles = [];
     score = 0;
+    totalScore = 0;
     level = 1;
     elapsedMs = 0;
     timeVal.textContent = '0:00';
@@ -660,6 +663,7 @@
     popping = new Set();
     const bonus = Math.max(2000, level * 300);
     score += bonus;
+    totalScore += bonus;
     scoreVal.textContent = score.toLocaleString();
     updateLevel();
     spawnPuddingBurst();
@@ -671,6 +675,7 @@
   function triggerZenkeshi(){
     const bonus = Math.max(1500, level * 250);
     score += bonus;
+    totalScore += bonus;
     scoreVal.textContent = score.toLocaleString();
     updateLevel();
 
@@ -705,7 +710,7 @@
     stageCleared = true;
     busy = true;
     clearTitle.textContent = 'ALL CLEAR!';
-    clearSub.textContent = '최종 점수 ' + score.toLocaleString() + ' · ' + formatTime(elapsedMs);
+    clearSub.textContent = '최종 점수 ' + totalScore.toLocaleString() + ' · ' + formatTime(elapsedMs);
     clearOverlay.classList.add('show');
     spawnFinalConfetti();
   }
@@ -714,7 +719,7 @@
     gameOver = true;
     busy = true;
     overlayTitle.textContent = 'GAME OVER';
-    overlaySub.textContent = '최종 점수 ' + score + ' · LV.' + level + ' · ' + formatTime(elapsedMs);
+    overlaySub.textContent = '최종 점수 ' + totalScore.toLocaleString() + ' · LV.' + level + ' · ' + formatTime(elapsedMs);
     overlay.classList.add('show');
   }
 
@@ -823,10 +828,16 @@
     dropInterval = Math.max(140, 700 - (level-1) * 32 - timeFactor);
   }
 
+  function thresholdForLevel(lvl){
+    return LEVEL_BASE_STEP + LEVEL_STEP_INCREMENT * (lvl - 1);
+  }
+
   function updateLevel(){
-    const newLevel = Math.min(MAX_LEVEL, 1 + Math.floor(score / LEVEL_STEP));
-    if(newLevel > level){
-      level = newLevel;
+    if(level < MAX_LEVEL && score >= thresholdForLevel(level)){
+      level++;
+      score = 0;
+      comboStreak = 0;
+      scoreVal.textContent = '0';
       levelVal.textContent = level;
       levelVal.classList.remove('pop');
       void levelVal.offsetWidth;
@@ -926,7 +937,9 @@
       const colorBonus = colorsInvolved.size>=2 ? (colorsInvolved.size-1)*3 : 0;
       const groupBonus = groups.reduce((s,g)=> s + Math.max(0, g.length-4), 0);
       const multiplier = Math.max(1, power + colorBonus + groupBonus);
-      score += totalCleared * 10 * multiplier;
+      const gained = totalCleared * 10 * multiplier;
+      score += gained;
+      totalScore += gained;
       scoreVal.textContent = score.toLocaleString();
       updateLevel();
       render();
