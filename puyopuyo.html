@@ -880,15 +880,19 @@
   document.getElementById('restartBtn').addEventListener('click', resetGame);
   document.getElementById('restartTop').addEventListener('click', resetGame);
 
-  // ---------- Mobile: swipe to move, tap to rotate ----------
+  // ---------- Mobile: swipe to move, tap to rotate, drag down to drop ----------
   let gestureActive = false;
   let gestureStartX = 0, gestureStartY = 0, gestureLastX = 0, gestureMoved = false;
+  let gestureHardFired = false;
+  const SOFT_DROP_DIST = 22;   // px dragged down before soft drop kicks in
+  const HARD_DROP_DIST = 130;  // px dragged down before it snaps to a hard drop
 
   boardWrap.addEventListener('pointerdown', (e)=>{
     gestureActive = true;
     gestureStartX = gestureLastX = e.clientX;
     gestureStartY = e.clientY;
     gestureMoved = false;
+    gestureHardFired = false;
   });
 
   boardWrap.addEventListener('pointermove', (e)=>{
@@ -897,16 +901,32 @@
     const totalDx = e.clientX - gestureStartX;
     const totalDy = e.clientY - gestureStartY;
     if(Math.abs(totalDx) > 8 || Math.abs(totalDy) > 8) gestureMoved = true;
+
     const threshold = Math.max(26, CELL * 0.62);
     if(Math.abs(dx) >= threshold){
       tryMove(dx > 0 ? 1 : -1);
       gestureLastX = e.clientX;
+    }
+
+    // Vertical drag distance controls drop: a short drag = soft drop,
+    // dragging far enough snaps straight into a hard drop.
+    if(!gestureHardFired){
+      if(totalDy >= HARD_DROP_DIST){
+        gestureHardFired = true;
+        softDrop = false;
+        hardDrop();
+      } else if(totalDy >= SOFT_DROP_DIST){
+        softDrop = true;
+      } else {
+        softDrop = false;
+      }
     }
   });
 
   function endGesture(e){
     if(!gestureActive) return;
     gestureActive = false;
+    softDrop = false;
     if(!gestureMoved){
       tryRotate(1); // tap the board = rotate
     }
