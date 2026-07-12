@@ -132,6 +132,60 @@
     color:var(--accent);
   }
   .level-up-toast.show{ opacity:1; transform: translate(-50%,-50%) scale(1); }
+  .level-up-toast.stage{
+    padding:18px 42px;
+    background: linear-gradient(135deg, rgba(255,214,120,0.22), rgba(255,140,180,0.14));
+    border-color: rgba(255,214,120,0.5);
+    box-shadow: 0 0 50px rgba(255,214,120,0.4);
+  }
+  .level-up-toast.stage .lu-title{
+    font-size:32px;
+    color:#ffd166;
+    text-shadow: 0 0 26px rgba(255,209,102,0.9);
+  }
+  .level-up-toast.stage .lu-sub{ color:#ffe9b8; }
+
+  .zenkeshi-toast{
+    position:absolute;
+    top:42%; left:50%;
+    transform: translate(-50%,-50%) scale(0.6) rotate(-2deg);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    padding:18px 40px;
+    border-radius:18px;
+    background: linear-gradient(120deg, rgba(255,140,180,0.22), rgba(139,233,255,0.2), rgba(255,214,120,0.22));
+    background-size:220% 220%;
+    border:1px solid rgba(255,255,255,0.55);
+    box-shadow: 0 0 60px rgba(255,255,255,0.35);
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.3s ease, transform 0.35s cubic-bezier(.34,1.56,.64,1);
+    z-index:7;
+    white-space:nowrap;
+  }
+  .zenkeshi-toast .zk-title{
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:0.06em;
+    background: linear-gradient(90deg, #ff8bd6, #8be9ff, #ffe98b, #ff8bd6);
+    background-size:300% auto;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation: rainbowShift 2.2s linear infinite;
+    text-shadow: 0 0 24px rgba(255,255,255,0.5);
+  }
+  .zenkeshi-toast .zk-sub{
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    color:#fff;
+  }
+  .zenkeshi-toast.show{ opacity:1; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+  @keyframes rainbowShift{
+    0%{ background-position:0% 50%; }
+    100%{ background-position:300% 50%; }
+  }
   .label{
     font-size:10px;
     letter-spacing:0.22em;
@@ -205,36 +259,6 @@
     .hint{ font-size:11px; }
   }
 
-  /* ---------- Mobile drop controls ---------- */
-  #dropControls{
-    display:flex;
-    gap:12px;
-    justify-content:center;
-    padding: 0 16px max(14px, env(safe-area-inset-bottom)) 16px;
-    flex-shrink:0;
-  }
-  .drop-btn{
-    flex:1;
-    max-width:150px;
-    padding:13px 0;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,0.12);
-    background:rgba(30,24,40,0.75);
-    color:#8be9ff;
-    font-size:13px;
-    font-weight:600;
-    letter-spacing:0.04em;
-    text-align:center;
-    cursor:pointer;
-    box-shadow: 0 8px 20px -8px rgba(80,40,90,0.35);
-  }
-  .drop-btn:active{ background:rgba(50,44,64,0.85); }
-  .drop-btn.hard{ color:#ffd166; }
-
-  @media (min-width: 760px){
-    #dropControls{ display:none; }
-  }
-
   /* ---------- Overlay ---------- */
   .overlay{
     position:absolute; inset:0;
@@ -255,6 +279,14 @@
     font-weight:800;
     letter-spacing:0.08em;
   }
+  .clear-overlay{
+    background: radial-gradient(circle at 50% 30%, rgba(255,214,120,0.16), rgba(4,4,9,0.9) 70%);
+  }
+  .clear-title{
+    font-size:32px;
+    color:#ffd166;
+    text-shadow: 0 0 30px rgba(255,209,102,0.7);
+  }
   .btn{
     padding:12px 28px;
     border-radius:999px;
@@ -265,6 +297,11 @@
     font-size:14px;
     letter-spacing:0.05em;
     cursor:pointer;
+  }
+  .btn.ghost{
+    background:rgba(255,255,255,0.08);
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.25);
   }
   .btn:active{ transform: scale(0.96); }
 
@@ -322,8 +359,13 @@
     <canvas id="board"></canvas>
     <div class="chain-val" id="chainVal">2 CHAIN!</div>
     <div class="level-up-toast" id="levelUpToast">
-      <div class="lu-title">LEVEL UP!</div>
+      <div class="lu-title" id="levelUpTitle">LEVEL UP!</div>
       <div class="lu-sub" id="levelUpSub">LV.2</div>
+    </div>
+
+    <div class="zenkeshi-toast" id="zenkeshiToast">
+      <div class="zk-title">ALL CLEAR!</div>
+      <div class="zk-sub" id="zenkeshiSub">BONUS +0</div>
     </div>
 
     <div class="overlay" id="overlay">
@@ -331,14 +373,18 @@
       <div class="label" id="overlaySub">최종 점수 0</div>
       <button class="btn" id="restartBtn">다시 시작</button>
     </div>
+
+    <div class="overlay clear-overlay" id="clearOverlay">
+      <div class="overlay-title clear-title" id="clearTitle">ALL CLEAR!</div>
+      <div class="label" id="clearSub">최종 점수 0</div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn ghost" id="continueBtn">이어서 플레이</button>
+        <button class="btn" id="clearRestartBtn">다시 시작</button>
+      </div>
+    </div>
   </div>
 
   <div class="hint"><b>←→</b> 이동 &nbsp; <b>↑/X</b> 회전 &nbsp; <b>Z</b> 반대회전 &nbsp; <b>↓</b> 소프트 &nbsp; <b>Space</b> 하드드롭</div>
-
-  <div id="dropControls">
-    <div class="drop-btn soft" id="softBtn">▼ 소프트 드롭</div>
-    <div class="drop-btn hard" id="hardBtn">⤓ 하드 드롭</div>
-  </div>
 </div>
 
 <script>
@@ -396,10 +442,16 @@
   const timeVal = document.getElementById('timeVal');
   const levelUpToast = document.getElementById('levelUpToast');
   const levelUpSub = document.getElementById('levelUpSub');
+  const levelUpTitle = document.getElementById('levelUpTitle');
+  const zenkeshiToast = document.getElementById('zenkeshiToast');
+  const zenkeshiSub = document.getElementById('zenkeshiSub');
   const chainVal = document.getElementById('chainVal');
   const overlay = document.getElementById('overlay');
   const overlayTitle = document.getElementById('overlayTitle');
   const overlaySub = document.getElementById('overlaySub');
+  const clearOverlay = document.getElementById('clearOverlay');
+  const clearTitle = document.getElementById('clearTitle');
+  const clearSub = document.getElementById('clearSub');
 
   // ---------- Responsive board sizing ----------
   const BOARD_TOP_PAD = 76; // must match #boardWrap padding-top in CSS
@@ -426,12 +478,14 @@
   let level = 1;
   let elapsedMs = 0;
   const LEVEL_STEP = 1000;   // score needed per level
-  const MAX_LEVEL = 20;
+  const MAX_LEVEL = 500;
+  const STAGE_SIZE = 5;      // every 5 levels = 1 stage clear
   let dropTimer = 0;
   let dropInterval = 700;
   let softDrop = false;
   let busy = false;
   let gameOver = false;
+  let stageCleared = false;
   let lastTime = 0;
   let animT = 0;
 
@@ -486,12 +540,16 @@
     timeVal.textContent = '0:00';
     dropInterval = 700;
     gameOver = false;
+    stageCleared = false;
     busy = false;
+    clearedAnythingThisTurn = false;
     scoreVal.textContent = '0';
     levelVal.textContent = '1';
     levelUpToast.classList.remove('show');
+    zenkeshiToast.classList.remove('show');
     chainVal.classList.remove('show');
     overlay.classList.remove('show');
+    clearOverlay.classList.remove('show');
     nextColors = [randColor(), randColor()];
     spawnPiece();
   }
@@ -505,6 +563,92 @@
     }
   }
 
+  function spawnStageBurst(){
+    const w = board.width, h = board.height;
+    for(let i=0;i<26;i++){
+      const col = COLORS[Math.floor(Math.random()*N_COLORS)];
+      particles.push({
+        x: Math.random()*w,
+        y: -10 - Math.random()*40,
+        vx: (Math.random()-0.5)*1.2,
+        vy: 1.5 + Math.random()*1.8,
+        life: 1,
+        decay: 0.006 + Math.random()*0.006,
+        radius: 2.5 + Math.random()*3,
+        color: col.glow
+      });
+    }
+  }
+
+  function isGridEmpty(){
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        if(grid[r][c]!==null) return false;
+      }
+    }
+    return true;
+  }
+
+  function spawnZenkeshiBurst(){
+    const w = board.width, h = board.height;
+    const cx = w/2, cy = h*0.4;
+    for(let i=0;i<44;i++){
+      const col = COLORS[Math.floor(Math.random()*N_COLORS)];
+      const angle = Math.random()*Math.PI*2;
+      const speed = 2 + Math.random()*4;
+      particles.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle)*speed,
+        vy: Math.sin(angle)*speed - 1,
+        life: 1,
+        decay: 0.01 + Math.random()*0.012,
+        radius: 2.5 + Math.random()*3.5,
+        color: col.glow
+      });
+    }
+  }
+
+  function triggerZenkeshi(){
+    const bonus = Math.max(1500, level * 250);
+    score += bonus;
+    scoreVal.textContent = score.toLocaleString();
+    updateLevel();
+
+    zenkeshiSub.textContent = '+' + bonus.toLocaleString() + ' BONUS';
+    zenkeshiToast.classList.remove('show');
+    void zenkeshiToast.offsetWidth;
+    zenkeshiToast.classList.add('show');
+    setTimeout(()=>zenkeshiToast.classList.remove('show'), 1500);
+
+    spawnZenkeshiBurst();
+  }
+
+  function spawnFinalConfetti(){
+    const w = board.width, h = board.height;
+    for(let i=0;i<60;i++){
+      const col = COLORS[Math.floor(Math.random()*N_COLORS)];
+      particles.push({
+        x: Math.random()*w,
+        y: -10 - Math.random()*h*0.6,
+        vx: (Math.random()-0.5)*1.6,
+        vy: 1.4 + Math.random()*2.2,
+        life: 1,
+        decay: 0.004 + Math.random()*0.005,
+        radius: 2.5 + Math.random()*3.5,
+        color: col.glow
+      });
+    }
+  }
+
+  function triggerAllClear(){
+    stageCleared = true;
+    busy = true;
+    clearTitle.textContent = 'ALL CLEAR!';
+    clearSub.textContent = '최종 점수 ' + score.toLocaleString() + ' · ' + formatTime(elapsedMs);
+    clearOverlay.classList.add('show');
+    spawnFinalConfetti();
+  }
+
   function triggerGameOver(){
     gameOver = true;
     busy = true;
@@ -515,14 +659,14 @@
 
   // ---------- Movement ----------
   function tryMove(dc){
-    if(busy||gameOver) return;
+    if(busy||gameOver||stageCleared) return;
     const p2 = { axis:{...piece.axis}, sub:{...piece.sub}, rot:piece.rot };
     p2.axis.c += dc; p2.sub.c += dc;
     if(pieceFits(p2)){ piece = p2; }
   }
 
   function tryRotate(dir){
-    if(busy||gameOver) return;
+    if(busy||gameOver||stageCleared) return;
     let newRot = (piece.rot + dir + 4) % 4;
     const p2 = { axis:{...piece.axis}, sub:{r:0,c:0,color:piece.sub.color}, rot:newRot };
     syncSub(p2);
@@ -536,14 +680,14 @@
   }
 
   function softDropStep(){
-    if(busy||gameOver) return false;
+    if(busy||gameOver||stageCleared) return false;
     const p2 = { axis:{...piece.axis, r:piece.axis.r+1}, sub:{...piece.sub, r:piece.sub.r+1}, rot:piece.rot };
     if(pieceFits(p2)){ piece = p2; return true; }
     return false;
   }
 
   function hardDrop(){
-    if(busy||gameOver) return;
+    if(busy||gameOver||stageCleared) return;
     while(softDropStep()){}
     lockPiece();
   }
@@ -551,6 +695,7 @@
   // ---------- Locking & resolving ----------
   function lockPiece(){
     busy = true;
+    clearedAnythingThisTurn = false;
     const cells = [piece.axis, piece.sub];
     for(const cell of cells){
       if(cell.r>=0 && cell.r<ROWS) grid[cell.r][cell.c] = cell.color;
@@ -627,16 +772,32 @@
       levelVal.classList.add('pop');
       setTimeout(()=>levelVal.classList.remove('pop'), 260);
 
+      const isStage = (level % STAGE_SIZE === 0);
+      const isFinal = (level >= MAX_LEVEL);
+
+      levelUpTitle.textContent = isStage ? ('STAGE ' + (level/STAGE_SIZE) + ' CLEAR!') : 'LEVEL UP!';
       levelUpSub.textContent = 'LV.' + level;
+      levelUpToast.classList.toggle('stage', isStage);
       levelUpToast.classList.remove('show');
       void levelUpToast.offsetWidth;
       levelUpToast.classList.add('show');
-      setTimeout(()=>levelUpToast.classList.remove('show'), 1100);
+      const showMs = isStage ? 1500 : 1100;
+      setTimeout(()=>levelUpToast.classList.remove('show'), showMs);
+
+      if(isStage){
+        spawnStageBurst();
+      }
+      if(isFinal){
+        stageCleared = true;
+        busy = true;
+        setTimeout(triggerAllClear, showMs + 150);
+      }
     }
     computeDropInterval();
   }
 
   let chainCount = 0;
+  let clearedAnythingThisTurn = false;
   const chainPower = [0,8,16,32,64,96,128,160,192,224,256,288,320,352,384,416,448];
 
   function resolveBoard(){
@@ -645,13 +806,18 @@
     if(groups.length===0){
       chainCount = 0;
       chainVal.classList.remove('show');
+      if(clearedAnythingThisTurn && isGridEmpty()){
+        triggerZenkeshi();
+      }
+      clearedAnythingThisTurn = false;
       render();
       busy = false;
-      if(!gameOver) spawnPiece();
+      if(!gameOver && !stageCleared) spawnPiece();
       return;
     }
 
     chainCount++;
+    clearedAnythingThisTurn = true;
     let totalCleared = 0;
     const colorsInvolved = new Set();
     popping = new Set();
@@ -838,7 +1004,7 @@
     animT += dt;
     updateParticles(dt);
 
-    if(!gameOver){
+    if(!gameOver && !stageCleared){
       elapsedMs += dt;
       timeDisplayAccum += dt;
       if(timeDisplayAccum >= 250){
@@ -848,7 +1014,7 @@
       }
     }
 
-    if(!busy && !gameOver){
+    if(!busy && !gameOver && !stageCleared){
       dropTimer += dt;
       const interval = softDrop ? Math.min(60, dropInterval/8) : dropInterval;
       if(dropTimer >= interval){
@@ -879,6 +1045,12 @@
 
   document.getElementById('restartBtn').addEventListener('click', resetGame);
   document.getElementById('restartTop').addEventListener('click', resetGame);
+  document.getElementById('clearRestartBtn').addEventListener('click', resetGame);
+  document.getElementById('continueBtn').addEventListener('click', ()=>{
+    clearOverlay.classList.remove('show');
+    stageCleared = false;
+    busy = false;
+  });
 
   // ---------- Mobile: swipe to move, tap to rotate, drag down to drop ----------
   let gestureActive = false;
@@ -934,17 +1106,6 @@
   boardWrap.addEventListener('pointerup', endGesture);
   boardWrap.addEventListener('pointercancel', endGesture);
   boardWrap.addEventListener('pointerleave', endGesture);
-
-  // ---------- Mobile: drop buttons ----------
-  const softBtn = document.getElementById('softBtn');
-  const hardBtn = document.getElementById('hardBtn');
-
-  softBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); softDrop = true; });
-  ['pointerup','pointercancel','pointerleave'].forEach(ev=>{
-    softBtn.addEventListener(ev, ()=>{ softDrop = false; });
-  });
-
-  hardBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); hardDrop(); });
 
   // ---------- Start ----------
   loadPuyoImages(()=>{
