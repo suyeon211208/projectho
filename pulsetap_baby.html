@@ -138,6 +138,8 @@ html, body{
   gap:6px;
 }
 .hud-block{ display:flex; flex-direction:column; align-items:flex-start; min-width:56px; }
+/* 어린이 모드: 목숨 차감이 없는 컨셉이라 라이프 HUD는 표시하지 않음 */
+.lives-block{ display:none; }
 .level-block, .score-block{ align-items:center; }
 .combo-block{ align-items:flex-end; }
 .hud-label{
@@ -273,7 +275,7 @@ html, body{
 .lane-track{
   position:relative;
   height:100%;
-  width: clamp(38px, 12vw, 58px);
+  width: clamp(58px, 16vw, 84px);
   flex: 0 0 auto;
 }
 
@@ -360,8 +362,8 @@ html, body{
   position:absolute;
   left:0; right:0; bottom:18px;
   margin:0 auto;
-  width: clamp(46px, 14vw, 68px);
-  height: clamp(46px, 14vw, 68px);
+  width: clamp(58px, 16vw, 84px);
+  height: clamp(58px, 16vw, 84px);
   z-index:2;
   border-radius:50%;
   background:
@@ -915,6 +917,9 @@ html, body{
         <button class="preset-btn" data-preset="4">
           <span class="preset-name">운명 교향곡</span><span class="preset-bpm">Beethoven</span>
         </button>
+        <button class="preset-btn embedded-btn" id="embeddedPresetBtn" type="button">
+          <span class="preset-name">🎵 가나다라 마바사아</span><span class="preset-bpm">한글송</span>
+        </button>
         <button class="preset-btn upload-btn" id="uploadPresetBtn" type="button">
           <span class="preset-name">📁 내 파일 업로드</span><span class="preset-bpm">MP3 · 영상</span>
         </button>
@@ -922,8 +927,29 @@ html, body{
       <input type="file" id="songInput" accept="audio/*,video/*,.mp3,.wav,.m4a,.ogg,.aac,.mp4,.mov,.webm,.m4v,audio/mpeg,audio/mp3" multiple="false" class="hidden-file-input">
       <p id="songStatus" class="song-status">기본 음악 "엘리제를 위하여"로 진행됩니다</p>
     </div>
+
+    <div class="score-table">
+      <span class="section-label">점수표</span>
+      <div class="score-row"><span>PERFECT</span><span class="pt perfect">+5점</span></div>
+      <div class="score-row"><span>GOOD</span><span class="pt good">+3점</span></div>
+      <div class="score-row"><span>MISS</span><span class="pt miss">0점 · 기회 차감</span></div>
+      <div class="score-row combo-row"><span>PERFECT 3연속↑</span><span class="pt combo">콤보 점수 = 5×콤보수</span></div>
+    </div>
+
+    <ul class="howto">
+      <li><b>테두리가 빛나는 순간</b>에 해당 버튼을 탭하세요 — <b>MISS / GOOD / PERFECT</b>로 판정돼요</li>
+      <li>정확히 누르면 <b>진동 + 사운드</b>로 피드백</li>
+      <li>타이밍을 놓치면 <b>기회 5회</b>가 하나씩 사라집니다</li>
+      <li><b>GOOD/PERFECT를 4번 성공</b>할 때마다 레벨업! (MISS는 레벨에 영향 없음)</li>
+      <li><b>J는 레벨6, K는 레벨18, L은 레벨35</b>부터 순서대로 활성화돼요</li>
+      <li><b>레벨10부터</b>는 공백 없이 클리커가 계속 켜져요, <b>레벨20부터</b>는 버튼 2개가 동시에 켜질 수 있어요</li>
+      <li>키보드는 <b>A S D · J K L</b>로 조작할 수 있어요</li>
+    </ul>
     <button id="startBtn" class="primary-btn">START</button>
-      </section>
+    <button id="testSoundBtn" class="secondary-btn">🔊 사운드 테스트</button>
+    <p id="audioDebug" class="audio-debug"></p>
+    <p class="hint">사운드 · 진동 사용을 위해 화면을 한 번 터치해 시작해주세요. 소리가 안 들리면 기기 무음 스위치/음량과 브라우저 탭 음소거를 확인해주세요.</p>
+  </section>
 
   <!-- 게임 오버 화면 -->
   <section id="overScreen" class="overlay hidden">
@@ -1506,8 +1532,10 @@ html, body{
     if (!running) return;
     const now = audioCtx.currentTime;
 
-    // 레이아웃 스래싱 방지를 위해 트랙 높이를 프레임당 한 번만 읽음
+    // 레이아웃 스래싱 방지를 위해 트랙 높이 및 버튼 위치를 프레임당 한 번만 읽음
     const colHeights = fallColumnEls.map(el => (el ? el.clientHeight : 0));
+    const colWidths  = fallColumnEls.map(el => (el ? el.clientWidth  : 0));
+    const laneMetrics = laneEls.map(el => (el ? { top: el.offsetTop, h: el.offsetHeight } : null));
 
     for (const note of notes) {
       const activeStart = note.hitTime - note.windowHalf; // 판정(입력 인정) 구간 — 그대로 널널하게 유지
@@ -1518,12 +1546,14 @@ html, body{
       const laneEl = laneEls[note.lane];
       if (!laneEl) continue;
 
-      // 낙하 블록 위치 갱신: fallStart(스폰 시점)~hitTime 사이를 0→1로 이동
+      // 낙하 블록 위치 갱신: fallStart(스폰 시점)~hitTime 사이를 0→1로 이동, 도착 지점은 버튼의 실제 위치와 정확히 일치시킴
       if (note.blockEl) {
         const fallStart = note.hitTime - FALL_DURATION_SEC;
         const progress = (now - fallStart) / FALL_DURATION_SEC;
-        const h = colHeights[note.lane] || 0;
-        const y = Math.min(progress, 1.2) * Math.max(h - 4 - BUTTON_BOTTOM_OFFSET, 0);
+        const lm = laneMetrics[note.lane];
+        const blockSize = (colWidths[note.lane] || 0) * 0.78;
+        const targetTop = lm ? lm.top + (lm.h - blockSize) / 2 : (colHeights[note.lane] || 0) - BUTTON_BOTTOM_OFFSET;
+        const y = Math.min(progress, 1.2) * Math.max(targetTop, 0);
         note.blockEl.style.transform = `translateY(${y}px) scale(${1 + Math.min(progress, 1) * 0.08})`;
         note.blockEl.classList.toggle("near", progress >= 0.78 && progress <= 1.05);
         if (progress > 1) {
@@ -1712,9 +1742,8 @@ html, body{
     perfectStreak = 0;
     combo = 0;
     clearComboGold();
-    lives = Math.max(0, lives - 1);
+    // 어린이 모드: 놓쳐도 목숨을 차감하지 않고 노래가 끝날 때까지 계속 진행
     updateHud();
-    updateLives();
     showJudge("MISS", "miss");
     playMissTone(audioCtx.currentTime);
     vibrate([40, 30, 40]);
@@ -1722,8 +1751,6 @@ html, body{
     const laneEl = laneEls[laneIdx];
     laneEl.classList.add("missed");
     setTimeout(() => laneEl.classList.remove("missed"), 350);
-
-    if (lives <= 0) endGame(false);
   }
 
   function vibrate(pattern) {
