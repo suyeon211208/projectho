@@ -929,11 +929,22 @@ function updateCamera(){
 }
 
 // ---------- DRAWING ----------
+function tileDepthShade(x, y){
+  const shade = ctx.createLinearGradient(x, y, x, y+TILE);
+  shade.addColorStop(0, 'rgba(255,255,255,0.22)');
+  shade.addColorStop(0.18, 'rgba(255,255,255,0.06)');
+  shade.addColorStop(0.75, 'rgba(0,0,0,0)');
+  shade.addColorStop(1, 'rgba(0,0,0,0.22)');
+  ctx.fillStyle = shade;
+  ctx.fillRect(x, y, TILE, TILE);
+}
+
 function drawTile(t, x, y){
   switch(t){
     case 1:
       if(groundTexture.complete && groundTexture.naturalWidth > 0){
         ctx.drawImage(groundTexture, x, y, TILE, TILE);
+        tileDepthShade(x, y);
         ctx.strokeStyle = 'rgba(0,0,0,0.15)';
         ctx.strokeRect(x,y,TILE,TILE);
       } else {
@@ -941,6 +952,7 @@ function drawTile(t, x, y){
         ctx.fillRect(x,y,TILE,TILE);
         ctx.fillStyle = '#6b4423';
         ctx.fillRect(x,y,TILE,4);
+        tileDepthShade(x, y);
         ctx.strokeStyle = 'rgba(0,0,0,0.15)';
         ctx.strokeRect(x,y,TILE,TILE);
       }
@@ -948,6 +960,7 @@ function drawTile(t, x, y){
     case 2:
       if(groundTexture.complete && groundTexture.naturalWidth > 0){
         ctx.drawImage(groundTexture, x, y, TILE, TILE);
+        tileDepthShade(x, y);
         ctx.strokeStyle = 'rgba(0,0,0,0.2)';
         ctx.strokeRect(x,y,TILE,TILE);
       } else {
@@ -960,6 +973,7 @@ function drawTile(t, x, y){
         ctx.moveTo(x,y+TILE/2); ctx.lineTo(x+TILE,y+TILE/2);
         ctx.moveTo(x+TILE/2,y); ctx.lineTo(x+TILE/2,y+TILE/2);
         ctx.stroke();
+        tileDepthShade(x, y);
       }
       break;
     case 3:
@@ -981,18 +995,34 @@ function drawTile(t, x, y){
       }
       break;
     case 4:
-    case 6:
-      ctx.fillStyle = '#2e8b3d';
-      ctx.fillRect(x,y,TILE,TILE);
-      ctx.fillStyle = '#1f6b2b';
-      ctx.fillRect(x,y,TILE,6);
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.strokeRect(x,y,TILE,TILE);
+    case 6: {
+      const pipeG = ctx.createLinearGradient(x, 0, x+TILE, 0);
+      pipeG.addColorStop(0, '#153f19');
+      pipeG.addColorStop(0.16, '#5fc471');
+      pipeG.addColorStop(0.4, '#2e8b3d');
+      pipeG.addColorStop(0.62, '#1f6b2b');
+      pipeG.addColorStop(0.86, '#164e1d');
+      pipeG.addColorStop(1, '#0f350f');
+      ctx.fillStyle = pipeG;
+      ctx.fillRect(x, y, TILE, TILE);
+      // top rim: bright highlight band over a darker shadow line, for a cylindrical lip
+      ctx.fillStyle = 'rgba(255,255,255,0.28)';
+      ctx.fillRect(x, y, TILE, TILE*0.14);
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.fillRect(x, y+TILE*0.14, TILE, TILE*0.05);
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.strokeRect(x, y, TILE, TILE);
       break;
-    case 5:
-      ctx.fillStyle = '#999';
-      ctx.fillRect(x+TILE/2-2, y, 4, TILE);
+    }
+    case 5: {
+      const poleG = ctx.createLinearGradient(x+TILE/2-3, 0, x+TILE/2+3, 0);
+      poleG.addColorStop(0, '#f2f2f2');
+      poleG.addColorStop(0.5, '#9a9a9a');
+      poleG.addColorStop(1, '#4d4d4d');
+      ctx.fillStyle = poleG;
+      ctx.fillRect(x+TILE/2-3, y, 6, TILE);
       break;
+    }
     case 7:
       // Hidden block: intentionally invisible until jumped into from below
       break;
@@ -1017,13 +1047,20 @@ function drawLevel(){
       if(level[row][col] === '5' && (row===0 || level[row-1][col] !== '5')){
         let x = col*TILE - cameraX;
         let y = row*TILE - cameraY;
-        ctx.fillStyle = '#2ecc71';
+        const flagG = ctx.createLinearGradient(x+TILE/2-16, y, x+TILE/2+2, y+20);
+        flagG.addColorStop(0, '#7be89a');
+        flagG.addColorStop(0.5, '#2ecc71');
+        flagG.addColorStop(1, '#1f9a56');
+        ctx.fillStyle = flagG;
         ctx.beginPath();
         ctx.moveTo(x+TILE/2+2, y);
         ctx.lineTo(x+TILE/2+2, y+20);
         ctx.lineTo(x+TILE/2-16, y+10);
         ctx.closePath();
         ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
       }
     }
   }
