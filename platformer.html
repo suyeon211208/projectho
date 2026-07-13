@@ -411,7 +411,7 @@ let level = [];
 let ROWS = LEVEL_ROWS;
 let COLS = 0;
 let LEVEL_WIDTH = 0;
-let LEVEL_HEIGHT = 0;
+let LEVEL_HEIGHT = LEVEL_ROWS * TILE;
 
 function tileAt(col, row){
   if(row < 0 || row >= ROWS || col < 0 || col >= COLS) return 0;
@@ -479,7 +479,8 @@ function resetPlayer(){
     player.x = 64; player.y = GROUND_ROW*TILE - player.h;
   } else {
     player.x = 60; player.y = 300;
-    cameraX = 0;
+    // Center the camera on the player right away instead of starting at the world's left edge
+    cameraX = player.x - canvas.width/2 + player.w/2;
   }
 }
 
@@ -837,7 +838,6 @@ function updateCamera(){
   let target = player.x - canvas.width/2 + player.w/2;
   cameraX += (target - cameraX) * 0.12;
   const maxCameraX = Math.max(0, LEVEL_WIDTH - canvas.width);
-  if(cameraX < 0) cameraX = 0;
   if(cameraX > maxCameraX) cameraX = maxCameraX;
 }
 
@@ -1103,8 +1103,8 @@ document.getElementById('overlayBtn').addEventListener('click', () => {
   hideOverlay();
 });
 
-fullReset();
 resizeCanvas();
+fullReset();
 gameState = 'ready';
 showOverlay('점프 어드벤처', '시작하기');
 render();
