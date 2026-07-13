@@ -113,6 +113,15 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('keyup', e => keys[e.code] = false);
 
+// ---- Show touch controls only on touch-capable (mobile) devices ----
+const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
+const btnJumpEl = document.getElementById('btnJump');
+const joystickBaseEl = document.getElementById('joystickBase');
+if(!isTouchDevice){
+  btnJumpEl.style.display = 'none';
+  joystickBaseEl.style.display = 'none';
+}
+
 // ---- Joystick (left/right movement) ----
 const joyBase = document.getElementById('joystickBase');
 const joyKnob = document.getElementById('joystickKnob');
