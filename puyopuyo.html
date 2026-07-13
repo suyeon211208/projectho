@@ -824,8 +824,9 @@
   }
 
   function computeDropInterval(){
-    const timeFactor = Math.floor(elapsedMs / 15000) * 25; // every 15s, speed up a bit more
-    dropInterval = Math.max(140, 700 - (level-1) * 32 - timeFactor);
+    const timeFactor = Math.floor(elapsedMs / 20000) * 10; // every 20s, speed up just a little
+    const levelFactor = 700 * Math.pow(0.988, level - 1); // gentle exponential ramp across 500 levels
+    dropInterval = Math.max(150, Math.round(levelFactor) - timeFactor);
   }
 
   function thresholdForLevel(lvl){
