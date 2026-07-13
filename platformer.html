@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>점프 어드벤처</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; overscroll-behavior:none; }
+  body {
+    font-family:'Courier New', monospace; color:#fff;
+    touch-action:none; overflow:hidden;
+    background:#000;
+  }
+  #gameContainer {
+    position:fixed; inset:0;
+    width:100%; height:100%;
+  }
+  canvas {
+    background:#5c94fc;
+    image-rendering: pixelated;
+    display:block;
+    width:100%; height:100%;
+  }
+  #hud {
+    position:absolute; top:clamp(8px,2vh,16px); left:clamp(8px,3vw,20px); right:clamp(8px,3vw,20px);
+    display:flex; justify-content:space-between;
+    font-size:clamp(12px,3.2vw,18px); text-shadow:2px 2px 0 #000;
+    pointer-events:none; font-weight:bold;
+  }
+  #objective {
+    position:absolute; top:clamp(34px,7vh,52px); left:50%; transform:translateX(-50%);
+    font-size:clamp(11px,2.8vw,15px); text-shadow:2px 2px 0 #000;
+    pointer-events:none; font-weight:bold; color:#ffe27a;
+    display:none; white-space:nowrap;
+  }
+  #overlay {
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    display:none; flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.6); text-align:center;
+    padding:16px; z-index:20;
+  }
+  #overlay h1 { font-size:clamp(20px,5vw,32px); margin-bottom:16px; text-shadow:3px 3px 0 #000; }
+  #overlay button {
+    margin-top:16px; padding:10px 24px; font-size:16px; font-family:inherit;
+    background:#ffcb05; border:3px solid #2b2b2b; border-radius:4px; cursor:pointer;
+    font-weight:bold;
+  }
+  #overlay button:active { transform:scale(0.96); }
+
+  /* Mobile joystick + jump button, overlaid on the game screen */
+  #joystickBase {
+    position:absolute; left:clamp(16px,4vw,32px); bottom:clamp(16px,4vh,32px);
+    width:clamp(84px,24vw,120px); height:clamp(84px,24vw,120px);
+    border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    border:3px solid rgba(255,255,255,0.35);
+    touch-action:none; -webkit-user-select:none; user-select:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #joystickKnob {
+    width:44%; height:44%;
+    border-radius:50%;
+    background:rgba(255,255,255,0.55);
+    border:2px solid rgba(0,0,0,0.3);
+    pointer-events:none;
+  }
+  #btnJump {
+    position:absolute; right:clamp(20px,5vw,40px); bottom:clamp(24px,5vh,40px);
+    width:clamp(72px,20vw,96px); height:clamp(72px,20vw,96px);
+    border-radius:50%;
+    background:rgba(255,255,255,0.2);
+    border:3px solid rgba(255,255,255,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(24px,7vw,32px); color:#fff;
+    touch-action:none; -webkit-user-select:none; user-select:none;
+  }
+  #btnJump:active, #joystickBase.active { background-color:rgba(255,255,255,0.35); }
+</style>
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <div>❤️ <span id="lives">3</span></div>
+    <div>🏁 <span id="levelNum">1</span>/100</div>
+    <div>🪙 <span id="coins">0</span></div>
+    <div>점수: <span id="score">0</span></div>
+  </div>
+  <div id="objective"></div>
+  <div id="overlay">
+    <h1 id="overlayText">점프 어드벤처</h1>
+    <button id="overlayBtn">시작하기</button>
+  </div>
+  <div id="joystickBase">
+    <div id="joystickKnob"></div>
+  </div>
+  <div id="btnJump">⤴</div>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const TILE = 32;
+const GRAVITY = 0.55;
+const JUMP_FORCE = -11.5;
+const MOVE_SPEED = 3.2;
+const FRICTION = 0.82;
+
+let keys = {};
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if(['Space','ArrowUp','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+});
+document.addEventListener('keyup', e => keys[e.code] = false);
+
+// ---- Joystick (left/right movement) ----
+const joyBase = document.getElementById('joystickBase');
+const joyKnob = document.getElementById('joystickKnob');
+const JOY_RADIUS = 40;
+let joyTouchId = null;
+
+function joyReset(){
+  joyKnob.style.transform = 'translate(0px,0px)';
+  joyBase.classList.remove('active');
+  keys['ArrowLeft'] = false;
+  keys['ArrowRight'] = false;
+}
+function joyMoveTo(clientX, clientY){
+  const rect = joyBase.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  let dx = clientX - cx, dy = clientY - cy;
+  const dist = Math.min(JOY_RADIUS, Math.hypot(dx,dy));
+  const angle = Math.atan2(dy,dx);
+  const kx = Math.cos(angle)*dist, ky = Math.sin(angle)*dist;
+  joyKnob.style.transform = `translate(${kx}px, ${ky}px)`;
+  keys['ArrowLeft'] = dx < -14;
+  keys['ArrowRight'] = dx > 14;
+}
+joyBase.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  joyTouchId = t.identifier;
+  joyBase.classList.add('active');
+  joyMoveTo(t.clientX, t.clientY);
+});
+joyBase.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for(const t of e.changedTouches){
+    if(t.identifier === joyTouchId) joyMoveTo(t.clientX, t.clientY);
+  }
+});
+function joyEnd(e){
+  for(const t of e.changedTouches){
+    if(t.identifier === joyTouchId){ joyTouchId = null; joyReset(); }
+  }
+}
+joyBase.addEventListener('touchend', joyEnd);
+joyBase.addEventListener('touchcancel', joyEnd);
+// Mouse fallback for testing on desktop
+let joyMouseDown = false;
+joyBase.addEventListener('mousedown', e => { joyMouseDown = true; joyBase.classList.add('active'); joyMoveTo(e.clientX, e.clientY); });
+window.addEventListener('mousemove', e => { if(joyMouseDown) joyMoveTo(e.clientX, e.clientY); });
+window.addEventListener('mouseup', () => { if(joyMouseDown){ joyMouseDown = false; joyReset(); } });
+
+// ---- Jump button ----
+function bindTouch(id, code){
+  const el = document.getElementById(id);
+  el.addEventListener('touchstart', e=>{ e.preventDefault(); keys[code]=true; });
+  el.addEventListener('touchend', e=>{ e.preventDefault(); keys[code]=false; });
+  el.addEventListener('mousedown', ()=> keys[code]=true);
+  el.addEventListener('mouseup', ()=> keys[code]=false);
+  el.addEventListener('mouseleave', ()=> keys[code]=false);
+}
+bindTouch('btnJump','Space');
+
+// ---- Full-screen canvas sizing ----
+let cameraY = 0;
+function resizeCanvas(){
+  const container = document.getElementById('gameContainer');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+  cameraY = LEVEL_HEIGHT - canvas.height; // anchors the ground near the bottom of the screen
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 100));
+
+// Level map: 0 empty, 1 ground, 2 brick, 3 question block, 4 pipe, 5 flagpole
+const TOTAL_LEVELS = 100;
+const LEVEL_ROWS = 13;
+const GROUND_ROW = 11; // first ground row (11 & 12 are both ground)
+
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// Builds a full level definition (tiles + enemy/coin spawns) for a given level number (1-100)
+function generateLevel(levelNum){
+  const rand = mulberry32(levelNum * 7919 + 12345);
+  const width = 56 + Math.round(levelNum * 1.4); // steadily grows across all 100 levels
+  const grid = [];
+  for(let r=0; r<LEVEL_ROWS; r++) grid.push(new Array(width).fill('.'));
+
+  // ---- Ground with jump-safe gaps ----
+  const solid = new Array(width).fill(true);
+  const gapChanceBase = 0.18 + Math.min(levelNum, 90) * 0.0035; // more gaps at higher levels
+  let col = 6; // safe starting stretch
+  while(col < width - 10){
+    if(rand() < gapChanceBase){
+      const gapW = 2 + (rand() < 0.35 ? 1 : 0); // 2-3 tiles wide (always jumpable)
+      for(let i=0; i<gapW && col+i < width-8; i++) solid[col+i] = false;
+      col += gapW + 3 + Math.floor(rand()*4);
+    } else {
+      col += 2 + Math.floor(rand()*4);
+    }
+  }
+  for(let c=0; c<width; c++){
+    grid[GROUND_ROW][c] = solid[c] ? '1' : '.';
+    grid[GROUND_ROW+1][c] = solid[c] ? '1' : '.';
+  }
+
+  // ---- Floating blocks (brick / question) at reachable height ----
+  const blockCount = 4 + Math.floor(levelNum/6);
+  for(let i=0; i<blockCount; i++){
+    const c = 8 + Math.floor(rand()*(width-18));
+    if(!solid[c]) continue;
+    const r = 6 + Math.floor(rand()*2); // rows 6-7, always within jump reach
+    grid[r][c] = rand() < 0.55 ? '3' : '2';
+  }
+
+  // ---- Pipes (2-tile tall, easy to hop over) ----
+  const pipeCount = Math.floor(levelNum/10);
+  for(let i=0; i<pipeCount; i++){
+    const c = 10 + Math.floor(rand()*(width-22));
+    if(!solid[c] || grid[GROUND_ROW-1][c] !== '.') continue;
+    grid[GROUND_ROW-2][c] = '4';
+    grid[GROUND_ROW-1][c] = '4';
+  }
+
+  // ---- One special pipe that warps to an underground area (level 15+) ----
+  let warpPipeCol = -1;
+  if(levelNum >= 15){
+    let tries = 0;
+    while(tries < 40){
+      const c = 15 + Math.floor(rand()*Math.max(1, width-34));
+      tries++;
+      if(!solid[c]) continue;
+      if(Math.abs(c - (width-4)) < 6) continue; // keep clear of the flag
+      if(grid[GROUND_ROW-1][c] !== '.' || grid[GROUND_ROW-2][c] !== '.') continue;
+      warpPipeCol = c;
+      grid[GROUND_ROW-2][c] = '6';
+      grid[GROUND_ROW-1][c] = '6';
+      break;
+    }
+  }
+
+  // ---- Single flag near the end ----
+  const flagCol = width - 4;
+  for(let c=flagCol-3; c<width; c++){
+    solid[c] = true;
+    grid[GROUND_ROW][c] = '1';
+    grid[GROUND_ROW+1][c] = '1';
+  }
+  for(let r=GROUND_ROW-6; r<GROUND_ROW; r++) grid[r][flagCol] = '5';
+
+  // ---- Enemies ----
+  const enemyCount = 3 + Math.floor(levelNum/5);
+  const enemies = [];
+  const usedCols = [];
+  for(let i=0; i<enemyCount; i++){
+    let tries = 0;
+    while(tries < 25){
+      const c = 10 + Math.floor(rand()*(width-24));
+      tries++;
+      if(!solid[c]) continue;
+      if(usedCols.some(u => Math.abs(u-c) < 4)) continue;
+      usedCols.push(c);
+      enemies.push({
+        x: c*TILE, y: GROUND_ROW*TILE - 26, w:26, h:26,
+        vx: rand() < 0.5 ? -1 : 1, alive:true, type:'goomba'
+      });
+      break;
+    }
+  }
+
+  // ---- Coins ----
+  const coinCount = 6 + Math.floor(levelNum/4);
+  const coins = [];
+  for(let i=0; i<coinCount; i++){
+    const c = 8 + Math.floor(rand()*(width-16));
+    const r = 5 + Math.floor(rand()*3);
+    if(grid[r][c] !== '.') continue;
+    coins.push({col:c, row:r, collected:false, bob: rand()*Math.PI*2});
+  }
+
+  // ---- Quest requirements: gets more demanding at higher levels ----
+  let reqCoins = 0, reqEnemies = 0;
+  if(levelNum > 15) reqCoins = Math.max(1, Math.ceil(coins.length * 0.4));
+  if(levelNum > 40) reqCoins = Math.max(1, Math.ceil(coins.length * 0.6));
+  if(levelNum > 35) reqEnemies = Math.max(1, Math.ceil(enemies.length * 0.4));
+  if(levelNum > 70) reqEnemies = Math.max(1, Math.ceil(enemies.length * 0.6));
+
+  return {
+    rows: grid.map(row => row.join('')),
+    enemies,
+    coins,
+    requirements: { coins: reqCoins, enemies: reqEnemies },
+    warpPipeCol
+  };
+}
+
+// Builds an underground bonus room reached via a warp pipe (only exists for level 15+).
+// Difficulty scales with how far past level 15 we are, mirroring the surface level's growth.
+// Deterministic per level so revisiting the same level gives the same room.
+function generateSubLevel(levelNum){
+  const rand = mulberry32(levelNum * 104729 + 555);
+  const diff = Math.max(0, levelNum - 14); // 1 at level15, grows from there
+  const width = 22 + Math.min(Math.round(diff * 1.1), 55);
+  const grid = [];
+  for(let r=0; r<LEVEL_ROWS; r++) grid.push(new Array(width).fill('.'));
+
+  // Ceiling (row 2) is solid across the whole room
+  for(let c=0; c<width; c++) grid[2][c] = '2';
+
+  // Floor with jump-safe gaps (more/wider as difficulty rises, same safety rule as the surface)
+  const solid = new Array(width).fill(true);
+  const gapChanceBase = 0.15 + Math.min(diff, 70) * 0.003;
+  let col = 5;
+  while(col < width - 8){
+    if(rand() < gapChanceBase){
+      const gapW = 2 + (rand() < 0.35 ? 1 : 0); // always jumpable (2-3 tiles)
+      for(let i=0; i<gapW && col+i < width-6; i++) solid[col+i] = false;
+      col += gapW + 3 + Math.floor(rand()*4);
+    } else {
+      col += 2 + Math.floor(rand()*4);
+    }
+  }
+  // keep the exit area solid
+  for(let c=width-6; c<width; c++) solid[c] = true;
+  for(let c=0; c<width; c++){
+    grid[GROUND_ROW][c] = solid[c] ? '1' : '.';
+    grid[GROUND_ROW+1][c] = solid[c] ? '1' : '.';
+  }
+
+  // Floating blocks with coins/power-ups
+  const blockCount = 3 + Math.floor(diff/4);
+  for(let i=0; i<blockCount; i++){
+    const c = 5 + Math.floor(rand()*(width-14));
+    if(!solid[c]) continue;
+    const r = 6 + Math.floor(rand()*2);
+    grid[r][c] = rand() < 0.5 ? '3' : '2';
+  }
+
+  // Scattered coins
+  const coins = [];
+  const coinCount = 6 + Math.floor(diff/2.5);
+  for(let i=0; i<coinCount; i++){
+    const c = 4 + Math.floor(rand()*(width-8));
+    const r = 5 + Math.floor(rand()*4);
+    if(grid[r][c] !== '.') continue;
+    coins.push({col:c, row:r, collected:false, bob: rand()*Math.PI*2});
+  }
+
+  // Enemies, scaling with difficulty
+  const enemyCount = 1 + Math.floor(diff/5);
+  const enemies = [];
+  const usedCols = [];
+  for(let i=0; i<enemyCount; i++){
+    let tries = 0;
+    while(tries < 20){
+      const c = 8 + Math.floor(rand()*(width-16));
+      tries++;
+      if(!solid[c]) continue;
+      if(usedCols.some(u => Math.abs(u-c) < 4)) continue;
+      usedCols.push(c);
+      enemies.push({
+        x: c*TILE, y: GROUND_ROW*TILE - 26, w:26, h:26,
+        vx: rand() < 0.5 ? -1 : 1, alive:true, type:'goomba'
+      });
+      break;
+    }
+  }
+
+  // Exit pipe back to the surface, near the far end
+  const exitCol = width - 4;
+  grid[GROUND_ROW-2][exitCol] = '6';
+  grid[GROUND_ROW-1][exitCol] = '6';
+
+  return {
+    rows: grid.map(row => row.join('')),
+    enemies,
+    coins
+  };
+}
+
+let level = [];
+let ROWS = LEVEL_ROWS;
+let COLS = 0;
+let LEVEL_WIDTH = 0;
+let LEVEL_HEIGHT = 0;
+
+function tileAt(col, row){
+  if(row < 0 || row >= ROWS || col < 0 || col >= COLS) return 0;
+  return level[row][col] === '.' ? 0 : parseInt(level[row][col]);
+}
+function setTile(col, row, val){
+  if(row<0||row>=ROWS||col<0||col>=COLS) return;
+  let r = level[row].split('');
+  r[col] = val===0? '.' : String(val);
+  level[row] = r.join('');
+}
+
+// Entities
+const SMALL_W = 24, SMALL_H = 30;
+const BIG_W = 28, BIG_H = 44;
+const player = {
+  x: 60, y: 300, w: SMALL_W, h: SMALL_H,
+  vx:0, vy:0, onGround:false, facing:1,
+  big:false, invincible:0, alive:true, jumpHeld:false
+};
+
+function growBig(){
+  if(player.big) return;
+  player.big = true;
+  let dw = BIG_W - SMALL_W, dh = BIG_H - SMALL_H;
+  player.x -= dw/2;
+  player.y -= dh;
+  player.w = BIG_W;
+  player.h = BIG_H;
+}
+
+function shrinkSmall(){
+  if(!player.big) return;
+  player.big = false;
+  let dw = BIG_W - SMALL_W, dh = BIG_H - SMALL_H;
+  player.x += dw/2;
+  player.y += dh;
+  player.w = SMALL_W;
+  player.h = SMALL_H;
+}
+
+let lives = 3, coins = 0, score = 0;
+let currentLevelNum = 1;
+let cameraX = 0;
+let gameState = 'ready'; // ready, playing, levelComplete, dead, win
+let bounceBlocks = []; // {col,row,timer}
+let popups = []; // floating text/score
+let enemies = [];
+let coinList = [];
+let items = []; // powerup mushrooms popped from blocks
+let levelRequirements = { coins: 0, enemies: 0 };
+let levelCoinsCollected = 0;
+let levelEnemiesDefeated = 0;
+let flagBlockedCooldown = 0;
+let inSubLevel = false;
+let mainSnapshot = null;
+let warpCooldown = 0;
+let prevOnGround = false;
+
+function resetPlayer(){
+  player.vx=0; player.vy=0;
+  player.w = SMALL_W; player.h = SMALL_H;
+  player.big=false; player.invincible=0; player.alive=true;
+  if(inSubLevel){
+    player.x = 64; player.y = GROUND_ROW*TILE - player.h;
+  } else {
+    player.x = 60; player.y = 300;
+    cameraX = 0;
+  }
+}
+
+function loadLevel(n){
+  currentLevelNum = Math.max(1, Math.min(TOTAL_LEVELS, n));
+  const gen = generateLevel(currentLevelNum);
+  level = gen.rows;
+  ROWS = level.length;
+  COLS = level[0].length;
+  LEVEL_WIDTH = COLS * TILE;
+  LEVEL_HEIGHT = ROWS * TILE;
+  enemies = gen.enemies;
+  coinList = gen.coins;
+  items = [];
+  bounceBlocks = [];
+  popups = [];
+  levelRequirements = gen.requirements;
+  levelCoinsCollected = 0;
+  levelEnemiesDefeated = 0;
+  flagBlockedCooldown = 0;
+  inSubLevel = false;
+  mainSnapshot = null;
+  warpCooldown = 0;
+  resetPlayer();
+  updateHUD();
+}
+
+function enterSubLevel(){
+  if(inSubLevel) return;
+  mainSnapshot = {
+    level, ROWS, COLS, LEVEL_WIDTH, LEVEL_HEIGHT,
+    enemies, coinList, items, bounceBlocks,
+    cameraX, playerX: player.x, playerY: player.y
+  };
+  const sub = generateSubLevel(currentLevelNum);
+  level = sub.rows;
+  ROWS = level.length;
+  COLS = level[0].length;
+  LEVEL_WIDTH = COLS * TILE;
+  LEVEL_HEIGHT = ROWS * TILE;
+  enemies = sub.enemies;
+  coinList = sub.coins;
+  items = [];
+  bounceBlocks = [];
+  cameraX = 0;
+  inSubLevel = true;
+  player.vx = 0; player.vy = 0;
+  player.x = 64;
+  player.y = GROUND_ROW*TILE - player.h;
+  warpCooldown = 30;
+  popups.push({x:player.x, y:player.y-30, text:'지하 세계 진입!', life:60});
+}
+
+function exitSubLevel(){
+  if(!inSubLevel || !mainSnapshot) return;
+  level = mainSnapshot.level;
+  ROWS = mainSnapshot.ROWS;
+  COLS = mainSnapshot.COLS;
+  LEVEL_WIDTH = mainSnapshot.LEVEL_WIDTH;
+  LEVEL_HEIGHT = mainSnapshot.LEVEL_HEIGHT;
+  enemies = mainSnapshot.enemies;
+  coinList = mainSnapshot.coinList;
+  items = mainSnapshot.items;
+  bounceBlocks = mainSnapshot.bounceBlocks;
+  cameraX = mainSnapshot.cameraX;
+  player.vx = 0; player.vy = 0;
+  player.x = mainSnapshot.playerX;
+  player.y = mainSnapshot.playerY - 6;
+  inSubLevel = false;
+  warpCooldown = 30;
+  mainSnapshot = null;
+  popups.push({x:player.x, y:player.y-30, text:'지상으로 복귀!', life:60});
+}
+
+function tryWarp(){
+  if(warpCooldown > 0) return;
+  const footCol = Math.floor((player.x + player.w/2) / TILE);
+  const footRow = Math.floor((player.y + player.h) / TILE);
+  if(tileAt(footCol, footRow) === 6){
+    if(inSubLevel) exitSubLevel(); else enterSubLevel();
+  }
+}
+
+function fullReset(){
+  lives = 3; coins = 0; score = 0;
+  loadLevel(1);
+}
+
+function updateHUD(){
+  document.getElementById('lives').textContent = lives;
+  document.getElementById('coins').textContent = coins;
+  document.getElementById('score').textContent = score;
+  document.getElementById('levelNum').textContent = currentLevelNum;
+  const objEl = document.getElementById('objective');
+  const needCoins = levelRequirements.coins > 0;
+  const needEnemies = levelRequirements.enemies > 0;
+  if(!needCoins && !needEnemies){
+    objEl.style.display = 'none';
+  } else {
+    objEl.style.display = 'block';
+    let parts = [];
+    if(needCoins) parts.push(`🪙 ${levelCoinsCollected}/${levelRequirements.coins}`);
+    if(needEnemies) parts.push(`👾 ${levelEnemiesDefeated}/${levelRequirements.enemies}`);
+    objEl.textContent = '목표: ' + parts.join('  ·  ');
+  }
+}
+
+function rectsOverlap(a,b){
+  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+}
+
+function tileSolid(t){ return t===1 || t===2 || t===3 || t===4 || t===6; }
+
+function collideWithTiles(entity){
+  entity.onGround = false;
+  // Horizontal
+  entity.x += entity.vx;
+  let left = Math.floor(entity.x / TILE);
+  let right = Math.floor((entity.x + entity.w) / TILE);
+  let top = Math.floor(entity.y / TILE);
+  let bottom = Math.floor((entity.y + entity.h - 1) / TILE);
+  for(let r = top; r <= bottom; r++){
+    if(entity.vx > 0){
+      if(tileSolid(tileAt(right, r))){
+        entity.x = right * TILE - entity.w;
+        entity.vx = 0;
+      }
+    } else if(entity.vx < 0){
+      if(tileSolid(tileAt(left, r))){
+        entity.x = (left+1) * TILE;
+        entity.vx = 0;
+      }
+    }
+  }
+  // Vertical
+  entity.y += entity.vy;
+  left = Math.floor(entity.x / TILE);
+  right = Math.floor((entity.x + entity.w) / TILE);
+  top = Math.floor(entity.y / TILE);
+  bottom = Math.floor((entity.y + entity.h) / TILE);
+  for(let c = left; c <= right; c++){
+    if(entity.vy > 0){
+      if(tileSolid(tileAt(c, bottom))){
+        entity.y = bottom * TILE - entity.h;
+        entity.vy = 0;
+        entity.onGround = true;
+      }
+    } else if(entity.vy < 0){
+      let t = tileAt(c, top);
+      if(tileSolid(t)){
+        entity.y = (top+1) * TILE;
+        entity.vy = 0;
+        if(t === 3 && entity === player){
+          hitBlock(c, top);
+        } else if(t === 2 && entity === player && player.big){
+          setTile(c, top, 0);
+          score += 20;
+          popups.push({x:c*TILE, y:top*TILE, text:'+20', life:40});
+        }
+      }
+    }
+  }
+}
+
+function hitBlock(col, row){
+  setTile(col, row, 0);
+  bounceBlocks.push({col, row, timer:8});
+  if(Math.random() < 0.4){
+    items.push({x:col*TILE, y:row*TILE - TILE, w:26, h:26, vx: 1.2, vy:-3, type:'mushroom', landed:false});
+  } else {
+    coins++;
+    levelCoinsCollected++;
+    score += 50;
+    popups.push({x:col*TILE, y:row*TILE, text:'+50', life:40});
+    updateHUD();
+  }
+}
+
+function updatePlayer(){
+  if(!player.alive) return;
+
+  if(keys['ArrowLeft']){ player.vx -= 0.6; player.facing = -1; }
+  if(keys['ArrowRight']){ player.vx += 0.6; player.facing = 1; }
+  player.vx *= FRICTION;
+  if(Math.abs(player.vx) > MOVE_SPEED) player.vx = MOVE_SPEED * Math.sign(player.vx);
+  if(Math.abs(player.vx) < 0.05) player.vx = 0;
+
+  if((keys['Space'] || keys['ArrowUp'])){
+    if(player.onGround && !player.jumpHeld){
+      player.vy = JUMP_FORCE;
+      player.jumpHeld = true;
+    } else if(!player.onGround && player.jumpHeld && player.vy < -3){
+      player.vy -= 0.15; // slight boost while held for variable jump feel
+    }
+  } else {
+    player.jumpHeld = false;
+    if(player.vy < -4) player.vy = -4; // cut jump short
+  }
+  if(player.onGround) player.jumpHeld = keys['Space']||keys['ArrowUp'] ? player.jumpHeld : false;
+
+  player.vy += GRAVITY;
+  if(player.vy > 14) player.vy = 14;
+
+  collideWithTiles(player);
+
+  if(player.x < 0) player.x = 0;
+  if(player.x + player.w > LEVEL_WIDTH) player.x = LEVEL_WIDTH - player.w;
+  if(player.invincible > 0) player.invincible--;
+
+  // Fall off world
+  if(player.y > LEVEL_HEIGHT + 100){
+    die();
+  }
+
+  if(flagBlockedCooldown > 0) flagBlockedCooldown--;
+  if(warpCooldown > 0) warpCooldown--;
+
+  if(player.onGround && !prevOnGround){
+    tryWarp();
+  }
+  prevOnGround = player.onGround;
+
+  // Reach flag
+  let col = Math.floor((player.x+player.w/2)/TILE);
+  let row = Math.floor((player.y+player.h/2)/TILE);
+  if(level[row] && level[row][col] === '5'){
+    const coinsOk = levelCoinsCollected >= levelRequirements.coins;
+    const enemiesOk = levelEnemiesDefeated >= levelRequirements.enemies;
+    if(coinsOk && enemiesOk){
+      winGame();
+    } else if(flagBlockedCooldown <= 0){
+      flagBlockedCooldown = 90;
+      let msg = [];
+      if(!coinsOk) msg.push(`코인 ${levelCoinsCollected}/${levelRequirements.coins}`);
+      if(!enemiesOk) msg.push(`적 처치 ${levelEnemiesDefeated}/${levelRequirements.enemies}`);
+      popups.push({x:player.x, y:player.y-24, text:msg.join(' · ')+' 필요!', life:70});
+      player.vx = -Math.abs(player.vx) - 1; // gentle push back from the pole
+    }
+  }
+}
+
+function die(){
+  if(!player.alive) return;
+  player.alive = false;
+  lives--;
+  updateHUD();
+  setTimeout(()=>{
+    if(lives <= 0){
+      gameState = 'dead';
+      showOverlay('게임 오버', '다시 시작');
+    } else {
+      loadLevel(currentLevelNum); // fresh level: enemies, coins, blocks all reset
+    }
+  }, 700);
+}
+
+function winGame(){
+  if(gameState !== 'playing') return;
+  score += 500;
+  updateHUD();
+  if(currentLevelNum >= TOTAL_LEVELS){
+    gameState = 'win';
+    showOverlay('🎉 100개 레벨 모두 클리어! 🎉', '처음부터 다시');
+  } else {
+    gameState = 'levelComplete';
+    showOverlay(`레벨 ${currentLevelNum} 클리어!`, `레벨 ${currentLevelNum+1} 시작`);
+  }
+}
+
+function updateEnemies(){
+  enemies.forEach(en => {
+    if(!en.alive) return;
+    en.vy = (en.vy||0) + GRAVITY;
+    if(en.vy > 14) en.vy = 14;
+    let prevVx = en.vx;
+    collideWithTiles(en);
+    if(en.vx === 0) en.vx = -prevVx || -1; // bounced off wall, reverse
+    // Check ledge ahead to avoid walking off (simple check)
+    let aheadCol = Math.floor((en.x + (en.vx>0? en.w+2 : -2)) / TILE);
+    let belowRow = Math.floor((en.y + en.h + 2) / TILE);
+    if(!tileSolid(tileAt(aheadCol, belowRow))){
+      en.vx *= -1;
+    }
+
+    // collide with player
+    if(player.alive && rectsOverlap(player, en)){
+      if(player.vy > 1 && player.y + player.h - en.y < 16){
+        en.alive = false;
+        levelEnemiesDefeated++;
+        player.vy = JUMP_FORCE * 0.6;
+        score += 100;
+        popups.push({x:en.x, y:en.y, text:'+100', life:40});
+        updateHUD();
+      } else if(player.invincible <= 0){
+        if(player.big){
+          shrinkSmall();
+          player.invincible = 90;
+        } else {
+          die();
+        }
+      }
+    }
+  });
+}
+
+function updateItems(){
+  items.forEach(it => {
+    if(it.type !== 'mushroom') return;
+    it.vy += GRAVITY;
+    if(it.vy > 10) it.vy = 10;
+    let tempEntity = {x:it.x, y:it.y, w:it.w, h:it.h, vx:it.vx, vy:it.vy, onGround:false};
+    collideWithTiles(tempEntity);
+    if(tempEntity.vx === 0) it.vx *= -1; else it.vx = tempEntity.vx;
+    it.x = tempEntity.x; it.y = tempEntity.y; it.vy = tempEntity.vy;
+
+    if(rectsOverlap(player, it) && !it.collected){
+      it.collected = true;
+      growBig();
+      score += 200;
+      popups.push({x:it.x, y:it.y, text:'+200', life:40});
+      updateHUD();
+    }
+  });
+  items = items.filter(it => !it.collected);
+}
+
+function updateCoins(){
+  coinList.forEach(c => {
+    if(c.collected) return;
+    c.bob += 0.1;
+    let cx = c.col*TILE + TILE/2;
+    let cy = c.row*TILE + TILE/2 + Math.sin(c.bob)*3;
+    let coinRect = {x:cx-10, y:cy-10, w:20, h:20};
+    if(rectsOverlap(player, coinRect)){
+      c.collected = true;
+      coins++;
+      levelCoinsCollected++;
+      score += 10;
+      updateHUD();
+    }
+  });
+}
+
+function updateBounceBlocks(){
+  bounceBlocks.forEach(b => b.timer--);
+  bounceBlocks = bounceBlocks.filter(b => b.timer > 0);
+}
+
+function updatePopups(){
+  popups.forEach(p => p.life--);
+  popups = popups.filter(p => p.life > 0);
+}
+
+function updateCamera(){
+  let target = player.x - canvas.width/2 + player.w/2;
+  cameraX += (target - cameraX) * 0.12;
+  const maxCameraX = Math.max(0, LEVEL_WIDTH - canvas.width);
+  if(cameraX < 0) cameraX = 0;
+  if(cameraX > maxCameraX) cameraX = maxCameraX;
+}
+
+// ---------- DRAWING ----------
+function drawTile(t, x, y){
+  switch(t){
+    case 1:
+      ctx.fillStyle = '#8b5a2b';
+      ctx.fillRect(x,y,TILE,TILE);
+      ctx.fillStyle = '#6b4423';
+      ctx.fillRect(x,y,TILE,4);
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+      ctx.strokeRect(x,y,TILE,TILE);
+      break;
+    case 2:
+      ctx.fillStyle = '#c0522d';
+      ctx.fillRect(x,y,TILE,TILE);
+      ctx.strokeStyle = '#8a3a1f';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x+1,y+1,TILE-2,TILE-2);
+      ctx.beginPath();
+      ctx.moveTo(x,y+TILE/2); ctx.lineTo(x+TILE,y+TILE/2);
+      ctx.moveTo(x+TILE/2,y); ctx.lineTo(x+TILE/2,y+TILE/2);
+      ctx.stroke();
+      break;
+    case 3:
+      ctx.fillStyle = '#ffcb05';
+      ctx.fillRect(x,y,TILE,TILE);
+      ctx.strokeStyle = '#c99a00';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x+1,y+1,TILE-2,TILE-2);
+      ctx.fillStyle = '#c99a00';
+      ctx.font = 'bold 18px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('?', x+TILE/2, y+TILE/2+7);
+      break;
+    case 4:
+    case 6:
+      ctx.fillStyle = '#2e8b3d';
+      ctx.fillRect(x,y,TILE,TILE);
+      ctx.fillStyle = '#1f6b2b';
+      ctx.fillRect(x,y,TILE,6);
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.strokeRect(x,y,TILE,TILE);
+      break;
+    case 5:
+      ctx.fillStyle = '#999';
+      ctx.fillRect(x+TILE/2-2, y, 4, TILE);
+      break;
+  }
+}
+
+function drawLevel(){
+  let startCol = Math.floor(cameraX / TILE);
+  let endCol = Math.ceil((cameraX + canvas.width) / TILE);
+  for(let row=0; row<ROWS; row++){
+    for(let col=startCol; col<=endCol; col++){
+      let t = tileAt(col,row);
+      if(t === 0) continue;
+      let skip = bounceBlocks.some(b => b.col===col && b.row===row);
+      if(skip) continue;
+      drawTile(t, col*TILE - cameraX, row*TILE - cameraY);
+    }
+  }
+  // Flag pole top
+  for(let row=0; row<ROWS; row++){
+    for(let col=startCol; col<=endCol; col++){
+      if(level[row][col] === '5' && (row===0 || level[row-1][col] !== '5')){
+        let x = col*TILE - cameraX;
+        let y = row*TILE - cameraY;
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.moveTo(x+TILE/2+2, y);
+        ctx.lineTo(x+TILE/2+2, y+20);
+        ctx.lineTo(x+TILE/2-16, y+10);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+}
+
+function drawBouncingBlocks(){
+  bounceBlocks.forEach(b => {
+    let offset = Math.sin((8-b.timer)/8*Math.PI) * 8;
+    drawTile(3, b.col*TILE - cameraX, b.row*TILE - cameraY - offset);
+  });
+}
+
+function drawCoin(x,y){
+  ctx.fillStyle = '#ffd700';
+  ctx.beginPath();
+  ctx.ellipse(x, y, 8, 10, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#b8860b';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function drawCoins(){
+  coinList.forEach(c => {
+    if(c.collected) return;
+    let cx = c.col*TILE + TILE/2 - cameraX;
+    let cy = c.row*TILE + TILE/2 + Math.sin(c.bob)*3 - cameraY;
+    drawCoin(cx, cy);
+  });
+}
+
+function drawEnemy(en){
+  if(!en.alive) return;
+  let x = en.x - cameraX, y = en.y - cameraY;
+  ctx.fillStyle = '#8b4513';
+  ctx.beginPath();
+  ctx.ellipse(x+en.w/2, y+en.h/2+2, en.w/2, en.h/2-2, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(x+en.w/2-5, y+en.h/2-2, 3, 0, Math.PI*2);
+  ctx.arc(x+en.w/2+5, y+en.h/2-2, 3, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#5a2d0c';
+  ctx.fillRect(x+2, y+en.h-6, 6, 6);
+  ctx.fillRect(x+en.w-8, y+en.h-6, 6, 6);
+}
+
+function drawItem(it){
+  let x = it.x - cameraX, y = it.y - cameraY;
+  ctx.fillStyle = '#e63946';
+  ctx.beginPath();
+  ctx.arc(x+it.w/2, y+it.h/2-2, it.w/2, Math.PI, 0);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(x+2, y+it.h/2-2, it.w-4, it.h/2);
+  ctx.fillStyle = '#e63946';
+  ctx.beginPath();
+  ctx.arc(x+6, y+6, 3, 0, Math.PI*2);
+  ctx.arc(x+it.w-6, y+8, 3, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawPlayer(){
+  if(!player.alive) return;
+  if(player.invincible > 0 && Math.floor(player.invincible/4)%2===0) return;
+  let x = player.x - cameraX, y = player.y - cameraY;
+  let h = player.h;
+  ctx.save();
+  if(player.facing < 0){
+    ctx.translate(x+player.w, y);
+    ctx.scale(-1,1);
+    x = 0; y = 0;
+  } else {
+    ctx.translate(x,y);
+    x = 0; y = 0;
+  }
+  // body
+  ctx.fillStyle = '#3b5bdb';
+  ctx.fillRect(x+2, y+12, player.w-4, h-12);
+  // head
+  ctx.fillStyle = '#ffd8a8';
+  ctx.fillRect(x+4, y+2, player.w-8, 12);
+  // cap
+  ctx.fillStyle = '#e63946';
+  ctx.fillRect(x+2, y+0, player.w-4, 6);
+  ctx.fillRect(x+player.w-6, y+4, 8, 4);
+  // eyes
+  ctx.fillStyle = '#000';
+  ctx.fillRect(x+player.w-8, y+6, 2, 2);
+  ctx.restore();
+}
+
+function drawPopups(){
+  popups.forEach(p => {
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(1,p.life/40)})`;
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.text, p.x - cameraX, p.y - cameraY - (40-p.life));
+  });
+}
+
+function drawBackground(){
+  if(inSubLevel){
+    ctx.fillStyle = '#1a1025';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = 'rgba(120,80,160,0.25)';
+    for(let i=0;i<6;i++){
+      let cx = (i*260 - cameraX*0.4) % (LEVEL_WIDTH+260);
+      if(cx < -80) cx += LEVEL_WIDTH+260;
+      ctx.beginPath();
+      ctx.arc(cx, 60, 40, 0, Math.PI*2);
+      ctx.fill();
+    }
+    return;
+  }
+  ctx.fillStyle = '#5c94fc';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  // clouds (parallax)
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  for(let i=0;i<8;i++){
+    let cx = (i*300 - cameraX*0.3) % (LEVEL_WIDTH+300);
+    if(cx < -100) cx += LEVEL_WIDTH+300;
+    drawCloud(cx, 50 + (i%3)*20);
+  }
+  // hills (anchored near the bottom of the screen regardless of screen height)
+  ctx.fillStyle = '#3f8f3f';
+  const hillBaseline = canvas.height - 50;
+  for(let i=0;i<6;i++){
+    let hx = (i*400 - cameraX*0.5) % (LEVEL_WIDTH+400);
+    if(hx < -150) hx += LEVEL_WIDTH+400;
+    ctx.beginPath();
+    ctx.arc(hx, hillBaseline, 90, Math.PI, 0);
+    ctx.fill();
+  }
+}
+function drawCloud(x,y){
+  ctx.beginPath();
+  ctx.arc(x,y,16,0,Math.PI*2);
+  ctx.arc(x+18,y-6,20,0,Math.PI*2);
+  ctx.arc(x+38,y,16,0,Math.PI*2);
+  ctx.fill();
+}
+
+function render(){
+  drawBackground();
+  drawLevel();
+  drawBouncingBlocks();
+  drawCoins();
+  items.forEach(drawItem);
+  enemies.forEach(drawEnemy);
+  drawPlayer();
+  drawPopups();
+}
+
+function gameLoop(){
+  if(gameState === 'playing'){
+    updatePlayer();
+    updateEnemies();
+    updateItems();
+    updateCoins();
+    updateBounceBlocks();
+    updatePopups();
+    updateCamera();
+  }
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+function showOverlay(text, btnText){
+  document.getElementById('overlayText').textContent = text;
+  document.getElementById('overlayBtn').textContent = btnText;
+  document.getElementById('overlay').style.display = 'flex';
+}
+function hideOverlay(){
+  document.getElementById('overlay').style.display = 'none';
+}
+
+document.getElementById('overlayBtn').addEventListener('click', () => {
+  if(gameState === 'levelComplete'){
+    loadLevel(currentLevelNum + 1);
+  } else {
+    fullReset();
+  }
+  gameState = 'playing';
+  hideOverlay();
+});
+
+fullReset();
+resizeCanvas();
+gameState = 'ready';
+showOverlay('점프 어드벤처', '시작하기');
+render();
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
