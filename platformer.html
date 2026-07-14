@@ -50,7 +50,7 @@
   /* Mobile joystick + jump button, overlaid on the game screen */
   #joystickBase {
     position:absolute; left:clamp(16px,4vw,32px); bottom:clamp(16px,4vh,32px);
-    width:clamp(84px,24vw,120px); height:clamp(84px,24vw,120px);
+    width:clamp(110px,30vw,160px); height:clamp(110px,30vw,160px);
     border-radius:50%;
     background:rgba(255,255,255,0.15);
     border:3px solid rgba(255,255,255,0.35);
@@ -65,13 +65,13 @@
     pointer-events:none;
   }
   #btnJump {
-    position:absolute; right:clamp(20px,5vw,40px); bottom:clamp(24px,5vh,40px);
-    width:clamp(72px,20vw,96px); height:clamp(72px,20vw,96px);
+    position:absolute; right:clamp(24px,6vw,48px); bottom:clamp(28px,6vh,48px);
+    width:clamp(96px,26vw,130px); height:clamp(96px,26vw,130px);
     border-radius:50%;
     background:rgba(255,255,255,0.2);
     border:3px solid rgba(255,255,255,0.4);
     display:flex; align-items:center; justify-content:center;
-    font-size:clamp(24px,7vw,32px); color:#fff;
+    font-size:clamp(30px,8vw,40px); color:#fff;
     touch-action:none; -webkit-user-select:none; user-select:none;
   }
   #btnJump:active, #joystickBase.active { background-color:rgba(255,255,255,0.35); }
@@ -137,7 +137,7 @@ if(!isTouchDevice){
 // ---- Joystick (left/right movement) ----
 const joyBase = document.getElementById('joystickBase');
 const joyKnob = document.getElementById('joystickKnob');
-const JOY_RADIUS = 40;
+const JOY_RADIUS = 55;
 let joyTouchId = null;
 
 function joyReset(){
@@ -155,8 +155,8 @@ function joyMoveTo(clientX, clientY){
   const angle = Math.atan2(dy,dx);
   const kx = Math.cos(angle)*dist, ky = Math.sin(angle)*dist;
   joyKnob.style.transform = `translate(${kx}px, ${ky}px)`;
-  keys['ArrowLeft'] = dx < -14;
-  keys['ArrowRight'] = dx > 14;
+  keys['ArrowLeft'] = dx < -19;
+  keys['ArrowRight'] = dx > 19;
 }
 joyBase.addEventListener('touchstart', e => {
   e.preventDefault();
