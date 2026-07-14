@@ -1157,8 +1157,8 @@ function drawGroundStrip(col, x, y){
 }
 
 function drawLevel(){
-  let startCol = Math.floor(cameraX / TILE);
-  let endCol = Math.ceil((cameraX + canvas.width) / TILE);
+  let startCol = Math.floor(cameraX / TILE) - 2;
+  let endCol = Math.ceil((cameraX + canvas.width) / TILE) + 2;
   for(let row=0; row<ROWS; row++){
     for(let col=startCol; col<=endCol; col++){
       let t = tileAt(col,row);
