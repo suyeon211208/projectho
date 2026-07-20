@@ -28,11 +28,14 @@
             <h1 class="main-title split-text" id="gallery-title">Selected Works</h1>
         </header>
 
-        <!-- 탭 메뉴: data-filter 값 기준으로 리스트 노출 -->
-        <div class="tab-menu">
-            <button class="tab-btn active" data-filter="all" onclick="filterGallery('all', this)">All Works</button>
-            <button class="tab-btn" data-filter="film" onclick="filterGallery('film', this)">Film</button>
-            <button class="tab-btn" data-filter="game" onclick="filterGallery('game', this)">Game</button>
+        <!-- 탭 메뉴: 선택 시 해당 카테고리 카드만 노출 -->
+        <div class="tab-menu-row">
+            <div class="tab-menu">
+                <button class="tab-btn active" data-filter="all" onclick="filterGallery('all', this)">All Works</button>
+                <button class="tab-btn" data-filter="film" onclick="filterGallery('film', this)">Film</button>
+                <button class="tab-btn" data-filter="game" onclick="filterGallery('game', this)">Game</button>
+            </div>
+            <button class="write-btn" onclick="openWriteModal()">✏️ 글쓰기</button>
         </div>
 
         <!-- 콘텐츠 리스트: 카드 클릭 시 팝업으로 전체 콘텐츠 노출 -->
@@ -64,6 +67,52 @@
                     <h1 id="modal-title" class="title"></h1>
                 </header>
                 <div id="modal-body-text" class="post-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 글쓰기 모달: 서버 없이 브라우저(localStorage)에 저장 -->
+    <div id="write-modal" class="modal-overlay" onclick="closeWriteModal(event)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeWriteModal(event)">&times;</button>
+            <div class="modal-body">
+                <header class="post-header">
+                    <h1 class="title">새 글쓰기</h1>
+                </header>
+                <form id="write-form" class="write-form">
+                    <label class="write-label">
+                        카테고리
+                        <select id="write-category" required>
+                            <option value="game">Game</option>
+                            <option value="film">Film</option>
+                        </select>
+                    </label>
+
+                    <label class="write-label">
+                        제목
+                        <input type="text" id="write-title" placeholder="제목을 입력하세요" required>
+                    </label>
+
+                    <label class="write-label">
+                        요약 (카드에 노출되는 한 줄 소개)
+                        <input type="text" id="write-excerpt" placeholder="짧은 소개를 입력하세요">
+                    </label>
+
+                    <label class="write-label">
+                        본문 (여러 문단은 줄바꿈으로 구분)
+                        <textarea id="write-body" rows="8" placeholder="내용을 입력하세요" required></textarea>
+                    </label>
+
+                    <label class="write-label">
+                        이미지 첨부 (선택, 여러 장 가능)
+                        <input type="file" id="write-images" accept="image/*" multiple>
+                    </label>
+
+                    <div class="write-actions">
+                        <button type="button" class="write-cancel" onclick="closeWriteModal()">취소</button>
+                        <button type="submit" class="write-submit">등록하기</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
