@@ -99,13 +99,13 @@
                     </label>
 
                     <label class="write-label">
-                        본문 (여러 문단은 줄바꿈으로 구분)
-                        <textarea id="write-body" rows="8" placeholder="내용을 입력하세요" required></textarea>
-                    </label>
-
-                    <label class="write-label">
-                        이미지 첨부 (선택, 여러 장 가능)
-                        <input type="file" id="write-images" accept="image/*" multiple>
+                        본문 (이미지를 넣고 싶은 위치에 커서를 두고 "이미지 삽입" 클릭)
+                        <div class="write-body-toolbar">
+                            <button type="button" class="insert-image-btn" onclick="triggerImageInsert()">🖼 이미지 삽입</button>
+                        </div>
+                        <textarea id="write-body" rows="10" placeholder="내용을 입력하세요. 이미지를 넣고 싶은 줄에서 위 버튼을 누르면 그 위치에 이미지가 삽입됩니다." required></textarea>
+                        <div id="write-image-preview" class="write-image-preview"></div>
+                        <input type="file" id="write-image-input" accept="image/*" multiple style="display:none" onchange="handleImageInsert(event)">
                     </label>
 
                     <div class="write-actions">
