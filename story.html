@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/story_style.css">
 </head>
 <body>
-   <div id="particle-container"></div>
+    <div id="particle-container"></div>
 
     <header class="main-header">
         <a href="index.html" class="logo-link">
@@ -16,7 +16,7 @@
         <nav class="nav-menu">
             <a href="about.html">About</a>
             <a href="gallery.html">Gallery</a>
-            <a href="story.html"class="active">Story</a>
+            <a href="story.html" class="active">Story</a>
             <a href="code.html">Code</a>
             <a href="content.html">Content</a>
         </nav>
@@ -27,45 +27,31 @@
             <span class="sub-title">Our Stories</span>
             <h1 class="main-title split-text" id="gallery-title">Selected Works</h1>
         </header>
+
+        <!-- 탭 메뉴: data-filter 값 기준으로 리스트 노출 -->
         <div class="tab-menu">
-            <button class="tab-btn active" onclick="filterGallery('all')">All Works</button>
-            <button class="tab-btn" onclick="filterGallery('film')">film</button>
-            <button class="tab-btn" onclick="filterGallery('game')">game</button>
+            <button class="tab-btn active" data-filter="all" onclick="filterGallery('all', this)">All Works</button>
+            <button class="tab-btn" data-filter="film" onclick="filterGallery('film', this)">Film</button>
+            <button class="tab-btn" data-filter="game" onclick="filterGallery('game', this)">Game</button>
         </div>
 
-        <div class="story-grid">
-           <article class="story-card" 
-            data-title="웹 기반 리듬게임" 
-            data-date="2026.07.07" 
-            data-content='
-            [{"type": "text", "value": "[역할 부여] 너는 웹 프론트엔드 개발자야.
-\n[결과물 정의]HTML, CSS, JavaScript를 파일로 작성해줘.
- \n[목적] 클리커 리듬게임을 만들거야. 
-\n[핵심 기능] 리듬 판정 시스템
-\n - 상단에서 블록이 떨어져 하단 버튼(레인)에 도착하면 판정 구간이 열리고, 그 안에서 버튼을 눌러 PERFECT / GOOD / MISS 판정
-\n - 판정 정확도에 따라 점수 차등 지급, 연속 PERFECT가 임계치를 넘으면 COMBO 상태 진입(문구: "COMBO ×N")
-\n - 블록의 낙하 목표 지점은 매 프레임 버튼의 실제 위치(offsetTop/높이)로 동적 계산 → 버튼 위치·크기가 바뀌어도 항상 정확히 겹쳐서 도착 (박자 어긋남 방지)
-<storong>레인 구성 & 난이도 진행</strong>
-\n - A·S·D 3개 레인으로 시작, 레벨 6에서 J, 레벨 18에서 K, 레벨 35에서 L이 순차적으로 열려 최대 6레인까지 확장
-\n - 레벨 20부터는 확률적으로 노트 2개가 동시에 등장(듀얼 노트)
-\n - 블록 낙하 시간 1.1초, 레벨이 오를수록 점점 빨라짐(스피드 램프)
-<storong>레곡 & 목숨 시스템</strong>
-\n - 곡 업로드 시 비트 자동 감지, 미업로드 시 기본 프리셋 곡(신스 클래식 편곡) 재생
-\n - 목숨(하트) 5개 보유, MISS 시 차감되며 0이 되면 게임오버 / 곡이 끝나면 클리어 처리
+        <!-- 콘텐츠 리스트: 카드 클릭 시 팝업으로 전체 콘텐츠 노출 -->
+        <div class="story-grid" id="story-grid">
 
-<storong>콤보 연출</strong>
-\n - 콤보 진입 시 해당 레인의 낙하 레일이 은은한 순금색으로 자연스럽게 채워지며(낮은 불투명도 + 대각선 셔머 반짝임), 콤보가 끊기면(MISS/GOOD) 부드럽게 사라짐
-\n - 판정별 파티클 & 네온 효과: GOOD(초록 텍스트·작은 파티클) / PERFECT(레인 색 강한 플래시) / COMBO(가장 강한 확산 글로우 + 이중 쇼크웨이브 링)
-<storong>결과 저장</strong>
-
-\n - 게임 종료 시 "📸 결과 사진으로 저장" 버튼으로 점수·최대콤보·레벨을 담은 이미지를 Canvas로 새로 그려 모바일 공유시트(사진함 저장) 또는 다운로드로 저장 가능
-\n[디자인 조건] 음악 리듬 게임 느낌이 나야해"}, 
-               {"type": "text", "value": "신기함은 있지만 실력이 쌓이지 않는 이유"},
-            {"type": "image", "value": "images/kb_01.png"}]'>
+            <article class="story-card"
+                data-category="game"
+                data-title="웹 기반 리듬게임"
+                data-date="2026.06.20"
+                data-content='[
+                    {"type": "text", "value": "[역할 부여] 너는 웹 프론트엔드 개발자야.\n[결과물 정의] HTML, CSS, JavaScript를 파일로 작성해줘.\n[목적] 클리커 리듬게임을 만들거야.\n[핵심 기능] 리듬 판정 시스템\n- 상단에서 블록이 떨어져 하단 버튼(레인)에 도착하면 판정 구간이 열리고, 그 안에서 버튼을 눌러 PERFECT / GOOD / MISS 판정\n- 판정 정확도에 따라 점수 차등 지급, 연속 PERFECT가 임계치를 넘으면 COMBO 상태 진입(문구: COMBO ×N)\n- 블록의 낙하 목표 지점은 매 프레임 버튼의 실제 위치(offsetTop/높이)로 동적 계산 → 버튼 위치·크기가 바뀌어도 항상 정확히 겹쳐서 도착 (박자 어긋남 방지)\n\n[레인 구성 & 난이도 진행]\n- A·S·D 3개 레인으로 시작, 레벨 6에서 J, 레벨 18에서 K, 레벨 35에서 L이 순차적으로 열려 최대 6레인까지 확장\n- 레벨 20부터는 확률적으로 노트 2개가 동시에 등장(듀얼 노트)\n- 블록 낙하 시간 1.1초, 레벨이 오를수록 점점 빨라짐(스피드 램프)\n\n[음악 & 목숨 시스템]\n- 곡 업로드 시 비트 자동 감지, 미업로드 시 기본 프리셋 곡(신스 클래식 편곡) 재생\n- 목숨(하트) 5개 보유, MISS 시 차감되며 0이 되면 게임오버 / 곡이 끝나면 클리어 처리\n\n[콤보 연출]\n- 콤보 진입 시 해당 레인의 낙하 레일이 은은한 순금색으로 자연스럽게 채워지며(낮은 불투명도 + 대각선 셔머 반짝임), 콤보가 끊기면(MISS/GOOD) 부드럽게 사라짐\n- 판정별 파티클 & 네온 효과: GOOD(초록 텍스트·작은 파티클) / PERFECT(레인 색 강한 플래시) / COMBO(가장 강한 확산 글로우 + 이중 쇼크웨이브 링)\n\n[결과 저장]\n- 게임 종료 시 \"📸 결과 사진으로 저장\" 버튼으로 점수·최대콤보·레벨을 담은 이미지를 Canvas로 새로 그려 모바일 공유시트(사진함 저장) 또는 다운로드로 저장 가능\n\n[디자인 조건] 음악 리듬 게임 느낌이 나야해"},
+                    {"type": "text", "value": "신기함은 있지만 실력이 쌓이지 않는 이유"},
+                    {"type": "image", "value": "images/kb_01.png"}
+                ]'>
                 <span class="date">2026.06.20</span>
                 <h2 class="title">웹 기반 리듬게임</h2>
                 <p class="excerpt">웹 기반의 리듬게임으로써 로컬 음악을 활용한 게임 활동</p>
             </article>
+
         </div>
     </main>
 
