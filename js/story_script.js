@@ -1,128 +1,101 @@
+// ===== Story 페이지: 탭 필터링 + 팝업 모달 =====
+
 document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.gallery-card');
-    const modalContent = document.querySelector('.modal-content');
-    const particleContainer = document.getElementById('particle-container');
-    const titleElement = document.getElementById('gallery-title');
-    /* =============================================================
-       2. [About 동일 효과] 타이틀 스플릿 문자 호버 업 모션
-       ============================================================= */
-    if (titleElement) {
-        const rawText = titleElement.innerText;
-        titleElement.innerHTML = ''; 
-        [...rawText].forEach(char => {
-            const span = document.createElement('span');
-            span.innerText = char === ' ' ? '\u00A0' : char; 
-            titleElement.appendChild(span);
-            span.addEventListener('mouseenter', () => { span.classList.add('hovered'); });
-            span.addEventListener('mouseleave', () => { setTimeout(() => span.classList.remove('hovered'), 200); });
-        });
-    }
-    /* =============================================================
-       3. 갤러리 고유 효과: 카드 마우스 3D 자석 틸트(기울임)
-       ============================================================= */
+    const cards = document.querySelectorAll('.story-card');
+    const modal = document.getElementById('story-modal');
+
+    // 카드 클릭 시 팝업으로 전체 콘텐츠 노출
     cards.forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const xc = rect.width / 2;
-            const yc = rect.height / 2;
-            const angleX = (yc - y) / 12; 
-            const angleY = (x - xc) / 12;
-            card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateY(-8px)`;
-        });
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
-        });
+        card.addEventListener('click', () => openModal(card));
+        card.style.cursor = 'pointer';
+    });
+
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
     });
 });
 
-/* =============================================================
-   data-content 속성 안에 실제 줄바꿈(엔터)이 그대로 들어있으면
-   JSON.parse가 "Bad control character in string literal" 에러를
-   내기 때문에, 파싱 전에 문자열 리터럴 내부의 제어문자만
-   안전하게 \n, \r, \t 로 이스케이프 처리한다.
-   (문자열 바깥의 JSON 구조는 건드리지 않는다)
-   ============================================================= */
-function sanitizeJSONString(str) {
-    let result = '';
-    let inString = false;
-    let escaped = false;
+/**
+ * 탭 메뉴 선택 시 해당 카테고리의 콘텐츠 리스트만 노출
+ * @param {string} category - 'all' | 'film' | 'game'
+ * @param {HTMLElement} btn - 클릭된 탭 버튼
+ */
+function filterGallery(category, btn) {
+    const cards = document.querySelectorAll('.story-card');
+    const tabs = document.querySelectorAll('.tab-btn');
 
-    for (let i = 0; i < str.length; i++) {
-        const char = str[i];
+    // 탭 active 스타일 갱신
+    tabs.forEach(tab => tab.classList.remove('active'));
+    if (btn) btn.classList.add('active');
 
-        if (escaped) {
-            result += char;
-            escaped = false;
-            continue;
-        }
-
-        if (char === '\\') {
-            result += char;
-            escaped = true;
-            continue;
-        }
-
-        if (char === '"') {
-            inString = !inString;
-            result += char;
-            continue;
-        }
-
-        if (inString) {
-            if (char === '\n') { result += '\\n'; continue; }
-            if (char === '\r') { result += '\\r'; continue; }
-            if (char === '\t') { result += '\\t'; continue; }
-        }
-
-        result += char;
-    }
-
-    return result;
+    // 카드 노출/숨김 처리
+    cards.forEach(card => {
+        const cardCategory = card.dataset.category;
+        const isMatch = category === 'all' || cardCategory === category;
+        card.style.display = isMatch ? '' : 'none';
+    });
 }
 
-window.openStoryModal = function(element) {
+/**
+ * 카드 클릭 시 전체 콘텐츠를 팝업(모달)으로 노출
+ * @param {HTMLElement} card
+ */
+function openModal(card) {
     const modal = document.getElementById('story-modal');
-    const bodyText = document.getElementById('modal-body-text');
-    
+    const modalTitle = document.getElementById('modal-title');
+    const modalDate = document.getElementById('modal-date');
+    const modalBody = document.getElementById('modal-body-text');
+
+    modalTitle.textContent = card.dataset.title || '';
+    modalDate.textContent = card.dataset.date || '';
+
+    // data-content(JSON 문자열) 파싱
+    let contentList = [];
     try {
-        const title = element.getAttribute('data-title');
-        const date = element.getAttribute('data-date');
-        const rawContent = element.getAttribute('data-content');
-        const contentBlocks = JSON.parse(sanitizeJSONString(rawContent));
-        
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-date').innerText = date;
-        
-        bodyText.innerHTML = '';
-        
-        contentBlocks.forEach(block => {
-            const div = document.createElement('div');
-            if (block.type === 'text') {
-                div.innerHTML = `<p style="margin-bottom: 20px;">${block.value}</p>`;
-            } else if (block.type === 'image') {
-                div.innerHTML = `<img src="${block.value}">`;
-            }
-            bodyText.appendChild(div);
-        });
-        
-        modal.classList.add('active'); // active 클래스 추가로 display 변경
-        document.body.style.overflow = 'hidden';
-    } catch (e) {
-        console.error("데이터 파싱 에러:", e);
+        contentList = JSON.parse(card.dataset.content);
+    } catch (err) {
+        console.error('콘텐츠 데이터를 불러오지 못했습니다:', err);
+        contentList = [{ type: 'text', value: '콘텐츠를 불러오는 중 오류가 발생했습니다.' }];
     }
-};
-window.closeModal = function(e) {
-    if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close')) {
-        document.getElementById('story-modal').classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
-};
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.story-card').forEach(card => {
-        card.addEventListener('click', function() {
-            window.openStoryModal(this);
-        });
+
+    // 모달 본문 렌더링
+    modalBody.innerHTML = '';
+    contentList.forEach(item => {
+        if (item.type === 'text') {
+            const p = document.createElement('p');
+            p.className = 'post-text-block';
+            // 줄바꿈(\n) 유지
+            item.value.split('\n').forEach((line, idx, arr) => {
+                p.appendChild(document.createTextNode(line));
+                if (idx < arr.length - 1) p.appendChild(document.createElement('br'));
+            });
+            modalBody.appendChild(p);
+        } else if (item.type === 'image') {
+            const img = document.createElement('img');
+            img.className = 'post-image-block';
+            img.src = item.value;
+            img.alt = card.dataset.title || '';
+            img.loading = 'lazy';
+            modalBody.appendChild(img);
+        }
     });
-});
+
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+}
+
+/**
+ * 팝업 닫기 (오버레이 클릭 또는 닫기 버튼)
+ */
+function closeModal(event) {
+    // 모달 콘텐츠 내부 클릭 시에는 닫히지 않도록 처리
+    if (event && event.target.closest('.modal-content') && !event.target.closest('.modal-close')) {
+        return;
+    }
+    const modal = document.getElementById('story-modal');
+    modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
+}
