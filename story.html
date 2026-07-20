@@ -32,6 +32,7 @@
         <div class="tab-menu-row">
             <div class="tab-menu">
                 <button class="tab-btn active" data-filter="all" onclick="filterGallery('all', this)">All Works</button>
+                 <button class="tab-btn" data-filter="film" onclick="filterGallery('image', this)">image</button>
                 <button class="tab-btn" data-filter="film" onclick="filterGallery('film', this)">Film</button>
                 <button class="tab-btn" data-filter="game" onclick="filterGallery('game', this)">Game</button>
             </div>
@@ -40,7 +41,6 @@
 
         <!-- 콘텐츠 리스트: 카드 클릭 시 팝업으로 전체 콘텐츠 노출 -->
         <div class="story-grid" id="story-grid">
-
             <article class="story-card"
                 data-category="game"
                 data-title="웹 기반 리듬게임"
