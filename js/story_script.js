@@ -153,7 +153,12 @@ function filterGallery(category, btn) {
 
 /* =============================================================
    글쓰기: 서버 없이 localStorage에 저장
+   + 본문 중간중간 원하는 위치에 이미지 삽입
    ============================================================= */
+
+// 이번 글쓰기 세션에서 삽입된 이미지: { placeholderId: base64DataUrl }
+let writeImageStore = {};
+
 function openWriteModal() {
     document.getElementById('write-modal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -165,32 +170,121 @@ window.closeWriteModal = function(e) {
         document.getElementById('write-modal').classList.remove('active');
         document.body.style.overflow = 'auto';
         document.getElementById('write-form').reset();
+        document.getElementById('write-image-preview').innerHTML = '';
+        writeImageStore = {};
     }
 };
 
+function triggerImageInsert() {
+    document.getElementById('write-image-input').click();
+}
+
+async function handleImageInsert(event) {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    const textarea = document.getElementById('write-body');
+
+    for (const file of files) {
+        const dataUrl = await fileToBase64(file);
+        const id = 'img' + Date.now() + Math.random().toString(36).slice(2, 7);
+        writeImageStore[id] = dataUrl;
+
+        // 커서(또는 선택 영역) 위치에 플레이스홀더 삽입 -> 그 자리가 곧 이미지 위치가 됨
+        insertAtCursor(textarea, `\n[[IMG:${id}]]\n`);
+        addImagePreview(id, dataUrl);
+    }
+
+    event.target.value = ''; // 같은 파일 다시 선택 가능하도록 초기화
+}
+
+function insertAtCursor(textarea, text) {
+    const start = textarea.selectionStart ?? textarea.value.length;
+    const end = textarea.selectionEnd ?? textarea.value.length;
+    const value = textarea.value;
+
+    textarea.value = value.slice(0, start) + text + value.slice(end);
+    const newPos = start + text.length;
+    textarea.selectionStart = textarea.selectionEnd = newPos;
+    textarea.focus();
+}
+
+function addImagePreview(id, dataUrl) {
+    const preview = document.getElementById('write-image-preview');
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    thumb.dataset.imgId = id;
+    thumb.innerHTML = `<img src="${dataUrl}" alt=""><button type="button" title="삽입 취소">&times;</button>`;
+
+    thumb.querySelector('button').addEventListener('click', () => {
+        removeInsertedImage(id);
+    });
+
+    preview.appendChild(thumb);
+}
+
+function removeInsertedImage(id) {
+    // 본문에 삽입해둔 플레이스홀더 텍스트도 함께 제거
+    const textarea = document.getElementById('write-body');
+    textarea.value = textarea.value.replace(new RegExp(`\\n?\\[\\[IMG:${id}\\]\\]\\n?`, 'g'), '\n');
+
+    delete writeImageStore[id];
+
+    const thumb = document.querySelector(`.write-image-preview .thumb[data-img-id="${id}"]`);
+    if (thumb) thumb.remove();
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
+ * 본문 텍스트를 [[IMG:id]] 플레이스홀더 기준으로 분리해
+ * 작성한 순서 그대로 text/image 블록 배열을 만든다.
+ */
+function buildContentFromBody(bodyText) {
+    const parts = bodyText.split(/(\[\[IMG:[a-zA-Z0-9]+\]\])/g);
+    const content = [];
+
+    parts.forEach(part => {
+        const match = part.match(/^\[\[IMG:([a-zA-Z0-9]+)\]\]$/);
+        if (match) {
+            const src = writeImageStore[match[1]];
+            if (src) content.push({ type: 'image', value: src });
+        } else {
+            const trimmed = part.trim();
+            if (trimmed) content.push({ type: 'text', value: trimmed });
+        }
+    });
+
+    return content;
+}
+
 function bindWriteForm() {
     const form = document.getElementById('write-form');
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
 
         const category = document.getElementById('write-category').value;
         const title = document.getElementById('write-title').value.trim();
         const excerpt = document.getElementById('write-excerpt').value.trim();
-        const body = document.getElementById('write-body').value.trim();
-        const fileInput = document.getElementById('write-images');
+        const body = document.getElementById('write-body').value;
 
-        if (!title || !body) return;
+        if (!title || !body.trim()) return;
 
-        const images = await filesToBase64(fileInput.files);
-
-        const content = [{ type: 'text', value: body }];
-        images.forEach(src => content.push({ type: 'image', value: src }));
+        const content = buildContentFromBody(body);
+        if (content.length === 0) return;
 
         const post = {
             id: 'post_' + Date.now(),
             category,
             title,
-            excerpt: excerpt || body.slice(0, 60),
+            excerpt: excerpt || body.replace(/\[\[IMG:[a-zA-Z0-9]+\]\]/g, '').trim().slice(0, 60),
             date: formatToday(),
             content
         };
@@ -199,20 +293,6 @@ function bindWriteForm() {
         appendCardToGrid(post, true);
         closeWriteModal();
     });
-}
-
-function filesToBase64(fileList) {
-    const files = Array.from(fileList || []);
-    if (files.length === 0) return Promise.resolve([]);
-
-    const readers = files.map(file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    }));
-
-    return Promise.all(readers);
 }
 
 function formatToday() {
