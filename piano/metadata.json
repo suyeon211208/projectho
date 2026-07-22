@@ -1,0 +1,6 @@
+{
+  "name": "인터랙티브 웹 피아노",
+  "description": "실시간 키보드/터치 지원 모바일 최적화 웹 피아노. 다양한 음색, 초저지연 오디오 합성, 녹음 및 WAV 다운로드, 메트로놈, 데모곡 연주 가이드 제공",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
