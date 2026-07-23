@@ -41,6 +41,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTime = 0;
     const accel = 0.2; // 스크롤 감속도 (부드러운 효과)
 
+    // 히어로 텍스트 박스: 스크롤에 따라 사라지며 좌측으로 흘러나가는 인터랙션
+    const heroBox = document.querySelector('.hero-box');
+
+    function updateHeroParallax() {
+        if (!heroBox) return;
+        const heroProgress = Math.min(Math.max(window.scrollY / window.innerHeight, 0), 1);
+
+        heroBox.style.opacity = String(1 - heroProgress);
+        heroBox.style.transform = `translate(${-heroProgress * 80}px, ${-heroProgress * 30}px)`;
+        heroBox.style.filter = `blur(${heroProgress * 5}px)`;
+    }
+
     // 스크롤 위치에 따라 헤더 상태 제어 및 목표 영상 시간 계산
     function handleScrollEffects() {
         const currentScroll = window.scrollY;
@@ -58,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (video.duration) {
             targetTime = video.duration * scrollFraction;
         }
+
+        // 3. 히어로 텍스트 패럴랙스 업데이트
+        updateHeroParallax();
     }
 
     // 영상을 부드럽게 재생시키는 루프 함수
