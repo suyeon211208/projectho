@@ -179,6 +179,9 @@ class CanvasManager {
     // Stats
     this.onStatsUpdate = undefined;
 
+    // Background image (user-loaded)
+    this.backgroundImage = null;
+
     this.initCanvas();
     this.bindEvents();
     this.startLoop();
@@ -232,6 +235,14 @@ class CanvasManager {
 
   getCurrentColor() {
     return this.currentColor;
+  }
+
+  setBackgroundImage(img) {
+    this.backgroundImage = img;
+  }
+
+  clearBackgroundImage() {
+    this.backgroundImage = null;
   }
 
   setEmitterXRatio(ratio) {
@@ -615,9 +626,19 @@ class CanvasManager {
   render() {
     const bs = this.settings.blockSize;
 
-    // Dark sleek background
+    // Dark sleek background (or user-loaded image, cropped to cover the canvas)
     this.ctx.fillStyle = '#08090d';
     this.ctx.fillRect(0, 0, this.width, this.height);
+
+    if (this.backgroundImage) {
+      const img = this.backgroundImage;
+      const scale = Math.max(this.width / img.width, this.height / img.height);
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+      const dx = (this.width - drawW) / 2;
+      const dy = (this.height - drawH) / 2;
+      this.ctx.drawImage(img, dx, dy, drawW, drawH);
+    }
 
     this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
     this.ctx.lineWidth = 1;
@@ -816,20 +837,27 @@ class UIController {
 
         <div class="panel-section actions-section">
           <button id="btnPushDrop" class="action-btn push-btn" title="설정한 색상의 블럭 강하">
-           1회
+            <span class="btn-icon">⬇️</span><span class="btn-label">1회</span>
           </button>
-          <button id="btnAutoStream" class="action-btn toggle-btn">
-            <span id="autoStreamLabel">연속</span>
+          <button id="btnAutoStream" class="action-btn toggle-btn" title="연속 낙하 켜기/끄기">
+            <span class="btn-icon">🌊</span><span class="btn-label" id="autoStreamLabel">연속</span>
           </button>
-          <button id="btnShuffleAll" class="action-btn">
-            섞기
+          <button id="btnShuffleAll" class="action-btn" title="쌓인 블럭 섞기">
+            <span class="btn-icon">🔀</span><span class="btn-label">섞기</span>
           </button>
-          <button id="btnClear" class="action-btn danger">
-          다시하기
+          <button id="btnClear" class="action-btn danger" title="전체 초기화">
+            <span class="btn-icon">🗑️</span><span class="btn-label">다시하기</span>
           </button>
           <button id="btnSoundToggle" class="action-btn icon-only" title="Toggle Sound">
             🔊
           </button>
+          <button id="btnBgImage" class="action-btn" title="로컬 이미지를 배경으로 불러오기">
+            <span class="btn-icon">🖼️</span><span class="btn-label">배경</span>
+          </button>
+          <button id="btnBgImageClear" class="action-btn" title="배경 이미지 지우기">
+            <span class="btn-icon">🚫</span><span class="btn-label">배경 지우기</span>
+          </button>
+          <input type="file" id="bgImageInput" accept="image/*" style="display:none" />
         </div>
       </div>
 
@@ -840,6 +868,7 @@ class UIController {
     this.setupPositionControl();
     this.setupSizeButtons();
     this.setupActions();
+    this.setupBackgroundImage();
     this.setupStats();
   }
 
@@ -1077,6 +1106,37 @@ class UIController {
       audioEngine.setEnabled(!enabled);
       btnSound.innerText = !enabled ? '🔊' : '🔇';
       btnSound.style.opacity = !enabled ? '1' : '0.5';
+    });
+  }
+
+  setupBackgroundImage() {
+    const btnLoad = this.container.querySelector('#btnBgImage');
+    const btnClear = this.container.querySelector('#btnBgImageClear');
+    const fileInput = this.container.querySelector('#bgImageInput');
+
+    btnLoad.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          this.canvasManager.setBackgroundImage(img);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+
+      fileInput.value = '';
+    });
+
+    btnClear.addEventListener('click', () => {
+      this.canvasManager.clearBackgroundImage();
     });
   }
 
