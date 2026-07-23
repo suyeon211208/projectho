@@ -152,15 +152,23 @@ function openModal(e, title, category, desc, author, date, imgPath) {
     document.body.style.overflow = 'hidden'; 
 }
 
-/* 현재 인덱스에 맞는 이미지/비디오를 화면에 렌더링하는 함수 */
+/* 유튜브 링크(watch/youtu.be/embed/shorts)에서 영상 ID만 추출 */
+function getYouTubeId(url) {
+    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+}
+
+/* 현재 인덱스에 맞는 이미지/비디오/유튜브를 화면에 렌더링하는 함수 */
 function renderMediaItem() {
     const imgElement = document.getElementById('modal-real-img');
     const videoElement = document.getElementById('modal-real-video');
+    const youtubeElement = document.getElementById('modal-real-youtube');
     const prevBtn = document.querySelector('.prev-btn');
     const nextBtn = document.querySelector('.next-btn');
 
     const activePath = currentMediaList[currentSlideIndex];
-    const isVideo = /\.(mp4|mov|webm|m4v)/i.test(activePath);
+    const youtubeId = getYouTubeId(activePath);
+    const isVideo = !youtubeId && /\.(mp4|mov|webm|m4v)/i.test(activePath);
 
     // 이미지 개수가 2개 이상일 때만 좌우 버튼 노출 보장
     if (currentMediaList.length > 1) {
@@ -171,17 +179,21 @@ function renderMediaItem() {
         if (nextBtn) nextBtn.style.display = 'none';
     }
 
-    if (isVideo && videoElement) {
-        if (imgElement) { imgElement.style.display = 'none'; imgElement.src = ''; }
-        
+    // 전환 전 세 미디어 요소 모두 정지 및 숨김 처리
+    if (videoElement) { videoElement.pause(); videoElement.src = ''; videoElement.style.display = 'none'; }
+    if (youtubeElement) { youtubeElement.src = ''; youtubeElement.style.display = 'none'; }
+    if (imgElement) { imgElement.style.display = 'none'; imgElement.src = ''; }
+
+    if (youtubeId && youtubeElement) {
+        youtubeElement.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&rel=0`;
+        youtubeElement.style.display = 'block';
+    } else if (isVideo && videoElement) {
         videoElement.src = activePath;
         videoElement.style.display = 'block';
         videoElement.muted = true;
         videoElement.load();
         videoElement.play().catch(() => { videoElement.controls = true; });
     } else if (imgElement) {
-        if (videoElement) { videoElement.pause(); videoElement.src = ''; videoElement.style.display = 'none'; }
-        
         imgElement.src = activePath;
         imgElement.style.display = 'block';
     }
@@ -210,9 +222,11 @@ function closeModal(e) {
         
         const videoElement = document.getElementById('modal-real-video');
         const imgElement = document.getElementById('modal-real-img');
-        
+        const youtubeElement = document.getElementById('modal-real-youtube');
+
         if (videoElement) { videoElement.pause(); videoElement.src = ""; }
         if (imgElement) { imgElement.src = ""; }
+        if (youtubeElement) { youtubeElement.src = ""; }
 
         setTimeout(() => { 
             modal.style.display = 'none'; 
