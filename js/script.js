@@ -96,3 +96,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         requestAnimationFrame(renderLoop);
     }
+
+    // 영상 메타데이터 로드 완료 시 초기화 및 루프 시작
+    video.addEventListener('loadedmetadata', () => {
+        measureHeroWrap();
+        handleScrollEffects();
+        requestAnimationFrame(renderLoop);
+    });
+
+    measureHeroWrap();
+    handleScrollEffects();
+
+    // 스크롤 및 화면 크기 변경 시 이벤트 바인딩
+    window.addEventListener('scroll', handleScrollEffects);
+    window.addEventListener('resize', () => {
+        measureHeroWrap();
+        handleScrollEffects();
+    });
+});
