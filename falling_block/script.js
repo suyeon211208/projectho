@@ -861,6 +861,8 @@ class UIController {
         </div>
       </div>
 
+      <button id="btnPanelToggle" class="panel-toggle-btn" title="설정 패널 열기/닫기">☰</button>
+
     `;
 
     this.setupColorButtons();
@@ -870,6 +872,7 @@ class UIController {
     this.setupActions();
     this.setupBackgroundImage();
     this.setupStats();
+    this.setupPanelToggle();
   }
 
   setupColorButtons() {
@@ -1137,6 +1140,20 @@ class UIController {
 
     btnClear.addEventListener('click', () => {
       this.canvasManager.clearBackgroundImage();
+    });
+  }
+
+  setupPanelToggle() {
+    const toggleBtn = this.container.querySelector('#btnPanelToggle');
+    const panel = this.container.querySelector('.controls-panel');
+    if (!toggleBtn || !panel) return;
+
+    // Starts collapsed; has no visual effect on desktop (rule only applies under the mobile breakpoint)
+    panel.classList.add('panel-collapsed');
+
+    toggleBtn.addEventListener('click', () => {
+      const isCollapsed = panel.classList.toggle('panel-collapsed');
+      toggleBtn.textContent = isCollapsed ? '☰' : '✕';
     });
   }
 
