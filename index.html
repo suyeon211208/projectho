@@ -2,23 +2,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project ho</title>
+    <title>Form&Flow</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="main-header">
     <a href="index.html" class="logo-link">
-        <div class="logo">Project ho</div>
+        <div class="logo">Form&Flow</div>
     </a>
     
-    <nav class="nav-menu">
+    <nav class="nav-menu" id="nav-menu">
         <a href="about.html">About</a>
         <a href="gallery.html">Gallery</a>
         <a href="story.html">Story</a>
         <a href="code.html">Code</a>
         <a href="content.html">Content</a>
     </nav>
+    <button class="menu-toggle" id="menu-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="nav-menu">
+        <span class="menu-toggle-bar"></span>
+        <span class="menu-toggle-bar"></span>
+        <span class="menu-toggle-bar"></span>
+    </button>
 </header>
+
+<div class="menu-backdrop" id="menu-backdrop"></div>
     <div class="video-container">
         <video id="scroll-video" src="assets/background.mp4" playsinline preload="auto"></video>
     </div>
