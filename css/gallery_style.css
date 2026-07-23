@@ -77,6 +77,50 @@ body {
     padding-bottom: 4px;
 }
 
+/* 햄버거 메뉴 버튼 (기본: 데스크톱에서는 숨김) */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 10001;
+}
+
+.menu-toggle-bar {
+    width: 100%;
+    height: 2px;
+    background-color: #0f172a;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.menu-toggle.open .menu-toggle-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-toggle.open .menu-toggle-bar:nth-child(2) { opacity: 0; }
+.menu-toggle.open .menu-toggle-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* 메뉴 오픈 시 배경을 어둡게 덮는 백드롭 (모바일 전용) */
+.menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    z-index: 9998;
+}
+
+.menu-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* =============================================================
    [About 동일 구현] 마우스 추적 액체 파티클 스타일 키프레임
    ============================================================= */
@@ -425,6 +469,59 @@ body {
     .modal-info-area { padding: 20px 25px; min-height: 180px; }
     .modal-main-img, .modal-main-video { max-height: calc(90vh - 200px); }
     .modal-main-title { font-size: 1.4rem; }
+
+    /* 필터 탭 메뉴: 모바일에서는 작게 줄이고 좌우 스크롤 가능하게 전환 */
+    .tab-menu {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 4px 4px 12px;
+        margin-bottom: 40px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .tab-menu::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        flex-shrink: 0;
+        padding: 8px 18px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        left: auto;
+        right: 0;
+        width: min(75vw, 320px);
+        height: 100vh;
+        background-color: #ffffff;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 32px;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: -10px 0 40px rgba(15, 23, 42, 0.08);
+        z-index: 10000;
+    }
+
+    .nav-menu.open {
+        transform: translateX(0);
+    }
+
+    .nav-menu a {
+        font-size: 1.1rem;
+    }
 }
 /* 모바일 브레이크 포인트 최적화 */
 @media (max-width: 968px) {
