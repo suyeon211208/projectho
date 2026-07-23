@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
         mouseX = e.clientX;
         mouseY = e.clientY;
 
+        updateSphereParallax();
+
         if (!particleContainer) return;
 
         const distance = Math.hypot(mouseX - lastParticleX, mouseY - lastParticleY);
@@ -23,6 +25,43 @@ document.addEventListener("DOMContentLoaded", () => {
             lastParticleY = mouseY;
         }
     });
+
+
+    // -------------------------------------------------------------
+    // [배경 오라 엔진] 섹션 2 멀티 블롭 패럴랙스 (스크롤 진행도 + 마우스 시차)
+    // -------------------------------------------------------------
+    const sphere1 = document.getElementById("sphere-obj");
+    const sphere2 = document.getElementById("sphere-obj-2");
+    const sphere3 = document.getElementById("sphere-obj-3");
+    let sec2Progress = 0;
+
+    function updateSphereParallax() {
+        const offsetX = mouseX - window.innerWidth / 2;
+        const offsetY = mouseY - window.innerHeight / 2;
+        const progress = sec2Progress;
+
+        if (sphere1) {
+            const scale = 0.4 + progress * 4.2;
+            const px = offsetX * 0.015;
+            const py = offsetY * 0.015;
+            sphere1.style.transform = `translate(${px}px, ${py}px) scale(${scale}) rotate(${progress * 135}deg)`;
+            sphere1.style.opacity = Math.min(progress * 1.8, 0.85);
+        }
+        if (sphere2) {
+            const scale = 0.3 + progress * 3.0;
+            const px = offsetX * -0.03;
+            const py = offsetY * -0.03;
+            sphere2.style.transform = `translate(${px}px, ${py}px) scale(${scale}) rotate(${-progress * 100}deg)`;
+            sphere2.style.opacity = Math.min(progress * 1.4, 0.6);
+        }
+        if (sphere3) {
+            const scale = 0.5 + progress * 3.6;
+            const px = offsetX * 0.05;
+            const py = offsetY * 0.05;
+            sphere3.style.transform = `translate(${px}px, ${py}px) scale(${scale}) rotate(${progress * 200}deg)`;
+            sphere3.style.opacity = Math.min(progress * 2.0, 0.7);
+        }
+    }
 
     function createParticle(x, y) {
         const particle = document.createElement("div");
@@ -42,6 +81,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
         particleContainer.appendChild(particle);
         setTimeout(() => particle.remove(), 1000);
+    }
+
+
+    // -------------------------------------------------------------
+    // [모바일 내비게이션] 햄버거 메뉴 토글
+    // -------------------------------------------------------------
+    const menuToggle = document.getElementById("menu-toggle");
+    const navMenu = document.getElementById("nav-menu");
+    const menuBackdrop = document.getElementById("menu-backdrop");
+
+    function closeMobileMenu() {
+        if (navMenu) navMenu.classList.remove("open");
+        if (menuToggle) {
+            menuToggle.classList.remove("open");
+            menuToggle.setAttribute("aria-expanded", "false");
+        }
+        if (menuBackdrop) menuBackdrop.classList.remove("open");
+        document.body.style.overflow = "";
+    }
+
+    function toggleMobileMenu() {
+        const isOpen = navMenu.classList.toggle("open");
+        menuToggle.classList.toggle("open", isOpen);
+        menuToggle.setAttribute("aria-expanded", String(isOpen));
+        if (menuBackdrop) menuBackdrop.classList.toggle("open", isOpen);
+        document.body.style.overflow = isOpen ? "hidden" : "";
+    }
+
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener("click", toggleMobileMenu);
+        navMenu.querySelectorAll("a").forEach((link) => {
+            link.addEventListener("click", closeMobileMenu);
+        });
+        if (menuBackdrop) menuBackdrop.addEventListener("click", closeMobileMenu);
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 768) closeMobileMenu();
+        });
     }
 
 
@@ -75,6 +151,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 char.addEventListener("mouseenter", () => char.classList.add("hovered"));
                 char.addEventListener("mouseleave", () => char.classList.remove("hovered"));
             }
+        });
+    }
+
+
+    // -------------------------------------------------------------
+    // [텍스트 마스크 리빌 엔진] 섹션 2 타이틀 클립패스 순차 리빌
+    // -------------------------------------------------------------
+    function splitMaskText(el) {
+        if (!el) return [];
+        const text = el.textContent;
+        el.innerHTML = "";
+        const chars = [];
+        for (let char of text) {
+            const span = document.createElement("span");
+            span.classList.add("mask-char");
+            span.innerHTML = char === " " ? "&nbsp;" : char;
+            el.appendChild(span);
+            chars.push(span);
+        }
+        return chars;
+    }
+
+    const maskChars1 = splitMaskText(document.getElementById("text-1"));
+    const maskChars2 = splitMaskText(document.getElementById("text-2"));
+
+    function revealMaskChars(chars, progress) {
+        const activeIndex = Math.floor(progress * chars.length);
+        chars.forEach((char, idx) => {
+            char.style.clipPath = idx <= activeIndex ? "inset(0 0 0% 0)" : "inset(0 0 100% 0)";
         });
     }
 
@@ -189,13 +294,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const grainOverlay = sec2Trigger.querySelector(".grain-overlay");
             const text1 = document.getElementById("text-1");
             const text2 = document.getElementById("text-2");
-            const sphere = document.getElementById("sphere-obj");
 
             const sec2Start = sec2Trigger.offsetTop;
             const sec2Duration = sec2Trigger.offsetHeight - window.innerHeight;
 
             if (scrollTop >= sec2Start && scrollTop <= sec2Start + sec2Duration) {
                 const progress = (scrollTop - sec2Start) / sec2Duration;
+
+                revealMaskChars(maskChars1, progress);
+                revealMaskChars(maskChars2, progress);
 
                 if (progress > 0.25) {
                     if (sec2Sticky) sec2Sticky.style.backgroundColor = "#070a12"; 
@@ -209,11 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (text2) text2.style.color = "#0f172a";
                 }
 
-                if (sphere) {
-                    const sphereScale = 0.4 + progress * 4.2;
-                    sphere.style.transform = `scale(${sphereScale}) rotate(${progress * 135}deg)`;
-                    sphere.style.opacity = Math.min(progress * 1.8, 0.85); 
-                }
+                sec2Progress = progress;
+                updateSphereParallax();
 
                 if (text1) {
                     text1.style.transform = `translateX(${-progress * 40}px)`;
@@ -226,21 +330,26 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // [인터랙션 3] 클립 패스(Clip Path) 활용 카드 섹션 스택업 슬라이드
+        // [인터랙션 3] 클립 패스(Clip Path) 활용 카드 섹션 스택업 슬라이드 (Section 2~4 순차 등장)
         const sec3Trigger = document.getElementById("transition-section-trigger");
         if (sec3Trigger) {
-            const panel2 = document.getElementById("p2");
+            const stackPanels = sec3Trigger.querySelectorAll(".panel:not(.panel-1)");
             const sec3Start = sec3Trigger.offsetTop;
             const sec3Duration = sec3Trigger.offsetHeight - window.innerHeight;
+            const segmentDuration = sec3Duration / stackPanels.length;
 
             if (scrollTop >= sec3Start && scrollTop <= sec3Start + sec3Duration) {
-                const progress = (scrollTop - sec3Start) / sec3Duration;
+                stackPanels.forEach((panel, index) => {
+                    const segmentStart = segmentDuration * index;
+                    const segmentProgress = Math.min(
+                        Math.max((scrollTop - sec3Start - segmentStart) / segmentDuration, 0),
+                        1
+                    );
 
-                if (panel2) {
-                    const clipPercent = 100 - (progress * 100);
-                    panel2.style.clipPath = `inset(${clipPercent}% 0% 0% 0%)`;
-                    panel2.style.opacity = 0.8 + (progress * 0.2);
-                }
+                    const clipPercent = 100 - (segmentProgress * 100);
+                    panel.style.clipPath = `inset(${clipPercent}% 0% 0% 0%)`;
+                    panel.style.opacity = 0.8 + (segmentProgress * 0.2);
+                });
             }
         }
     });
