@@ -197,6 +197,61 @@ body {
     line-height: 1.6;
 }
 
+/* 히어로 텍스트: 비디오 위에 노출되는 메인 카피 (좌측 정렬 + 스크롤 인터랙션) */
+#about.scroll-space {
+    justify-content: flex-start;
+    padding-left: 10%;
+}
+
+.hero-box {
+    max-width: 780px;
+    text-align: left;
+    transition: opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+    will-change: opacity, transform, filter;
+}
+
+.hero-title {
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 1.45;
+    letter-spacing: -0.02em;
+    margin-bottom: 22px;
+}
+
+.hero-desc {
+    font-size: 16px;
+    color: #ccc;
+    line-height: 1.85;
+    margin-bottom: 24px;
+}
+
+.hero-closing {
+    font-size: 18px;
+    font-weight: 600;
+    font-style: italic;
+    color: #fff;
+    letter-spacing: 0.01em;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .hero-desc {
+        font-size: 14px;
+    }
+
+    .hero-closing {
+        font-size: 16px;
+    }
+
+    #about.scroll-space {
+        padding-left: 6%;
+        padding-right: 6%;
+    }
+}
+
 /* 8. 모바일 화면: 상단 메뉴를 햄버거 슬라이드 메뉴로 전환 */
 @media (max-width: 768px) {
     .menu-toggle {
