@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form&Flow</title>
-    <link rel="stylesheet" href="css/about_style.css">
+    <link rel="stylesheet" href="css.about_style.css">
 </head>
 <body>
 
@@ -12,14 +12,21 @@
         <a href="index.html" class="logo-link">
             <div class="logo">Form&Flow</div>
         </a>
-        <nav class="nav-menu">
+        <nav class="nav-menu" id="nav-menu">
             <a href="about.html" class="active">About</a>
             <a href="gallery.html">Gallery</a>
             <a href="story.html">Story</a>
             <a href="code.html">code</a>
             <a href="content.html">Content</a>
         </nav>
+        <button class="menu-toggle" id="menu-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="nav-menu">
+            <span class="menu-toggle-bar"></span>
+            <span class="menu-toggle-bar"></span>
+            <span class="menu-toggle-bar"></span>
+        </button>
     </header>
+
+    <div class="menu-backdrop" id="menu-backdrop"></div>
 
     <div id="particle-container"></div>
 
@@ -34,7 +41,7 @@
         <section class="sticky-section hero-sticky">
             <div class="center-content">
                 <span class="sub-title">CREATIVE STUDIO</span>
-                <h1 class="main-title split-text" id="typing-text">We turn ideas into story, <br>visuals, products, <br>and scalable creative assets.</h1>
+                <h1 class="main-title split-text" id="typing-text">Shape ideas. <br>Build outcomes. <br>Expand stories.</h1>
                 <div class="scroll-down-arrow">
                     <span class="arrow-line"></span>
                     <span class="arrow-text">SCROLL DOWN</span>
@@ -52,17 +59,19 @@
                     <h4 class="mask-text text-bold" id="text-2">창작의 전 과정을 연결합니다.</h4>
                 </div>
                 <div class="design-sphere" id="sphere-obj"></div>
+                <div class="design-sphere design-sphere-2" id="sphere-obj-2"></div>
+                <div class="design-sphere design-sphere-3" id="sphere-obj-3"></div>
             </div>
         </section>
     </div>
 
     <div class="scroll-container" id="transition-section-trigger">
         <section class="sticky-section panels-wrap">
-            
+
             <div class="panel panel-1" id="p1">
                 <div class="panel-content">
                     <div class="panel-meta">Section 1. Who We Are</div>
-                    <h2 class="panel-title">우리는 AI 시대의 창작과 교육을 연결하는 브랜드입니다.</h2>
+                    <h2 class="panel-title">AI 시대의 창작과 교육을 연결하는 브랜드입니다.</h2>
                     <p class="panel-desc liquid-target">이미지, 영상, 바이브 코딩 기반 웹/앱 제작을 통해 아이디어가 실제 결과물로 완성되는 과정을 설계합니다.</p>
                 </div>
             </div>
@@ -74,9 +83,8 @@
                     <p class="panel-desc liquid-target">프로젝트형 교육과 실습 워크북, 콘텐츠 기획, 도서 개발,브랜드 및 IP 확장을 위한 창작 시스템을 만듭니다.</p>
                 </div>
             </div>
-        </section>
-     <section class="sticky-section panels-wrap">
-          <div class="panel panel-2" id="p2">
+
+            <div class="panel panel-3" id="p3">
                 <div class="panel-content">
                     <div class="panel-meta">Section 3. How We Work</div>
                     <h2 class="panel-title">우리는 툴보다 구조를 먼저 설계합니다.</h2>
@@ -84,7 +92,8 @@
 우리는 이 전체 흐름을 교육과 제작 안에서 통합적으로 다룹니다.</p>
                 </div>
             </div>
-          <div class="panel panel-2" id="p2">
+
+            <div class="panel panel-4" id="p4">
                 <div class="panel-content">
                     <div class="panel-meta">Section 4. Why It Matters</div>
                     <h2 class="panel-title">배운 것이 끝나지 않고 남아야 합니다.</h2>
@@ -95,17 +104,6 @@
             </div>
         </section>
     </div>
-
-    <section class="footer-section">
-        <div class="center-content">
-            <span class="sub-title">LET'S TALK</span>
-            <h1 class="main-title font-serif">Let's Create<br>Something Iconic.</h1>
-            <a href="#" class="premium-btn">
-                <span class="btn-text">Get In Touch</span>
-                <span class="btn-circle"></span>
-            </a>
-        </div>
-    </section>
 
     <script src="js/about_script.js"></script>
 </body>
