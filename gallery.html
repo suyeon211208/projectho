@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project ho</title>
-    <link rel="stylesheet" href="css/gallery_style.css">
+    <title>Form&Flow</title>
+    <link rel="stylesheet" href="gallery_style.css">
 </head>
 <body>
 
@@ -12,200 +12,268 @@
 
     <header class="main-header">
         <a href="index.html" class="logo-link">
-            <div class="logo">Project ho</div>
+            <div class="logo">Form&Flow</div>
         </a>
-        <nav class="nav-menu">
+        <nav class="nav-menu" id="nav-menu">
             <a href="about.html">About</a>
             <a href="gallery.html" class="active">Gallery</a>
             <a href="story.html">Story</a>
             <a href="code.html">Code</a>
             <a href="content.html">Content</a>
         </nav>
+        <button class="menu-toggle" id="menu-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="nav-menu">
+            <span class="menu-toggle-bar"></span>
+            <span class="menu-toggle-bar"></span>
+            <span class="menu-toggle-bar"></span>
+        </button>
     </header>
+
+    <div class="menu-backdrop" id="menu-backdrop"></div>
 
     <main class="gallery-container">
         <header class="gallery-hero">
-            <span class="sub-title">OUR PORTFOLIO</span>
-            <h1 class="main-title split-text" id="gallery-title">Selected Works</h1>
+            <span class="sub-title">Selected Works</span>
+            <h1 class="main-title split-text" id="gallery-title">OUR PORTFOLIO</h1>
         </header>
 
         <div class="tab-menu">
             <button class="tab-btn active" onclick="filterGallery('all')">All Works</button>
-            <button class="tab-btn" onclick="filterGallery('film')">Film</button>
-            <button class="tab-btn" onclick="filterGallery('video')">video</button>
-            <button class="tab-btn" onclick="filterGallery('programing')">programing</button>
+            <button class="tab-btn" onclick="filterGallery('film')">Image</button>
+            <button class="tab-btn" onclick="filterGallery('video')">Video</button>
         </div>
 
         <div class="gallery-grid">
             <!--비디오-->
-            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 박범수', '2026.04.12', 'gallery_video/pbs.mp4')">
+            <div class="gallery-card" data-category="video" onclick="openModal(event, 'plastic is forever', 'video', '플라스틱 문제를 다룬 영상', 'Director. 나*웅(학생작품)', '2026.04.12', 'gallery_video/264105531_1.mp4,gallery_video/264105531_2.mp4')">
                 <div class="card-img-wrap">
-                    <img src="gallery_video/pbs1.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_video/264105531.png" alt="plastic is forever 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">plastic is forever</h3>
+                    <p class="card-desc">플라스틱 문제를 다룬 영상</p>
+                    <div class="card-meta"><span class="author">나*웅(학생작품)</span><span class="date">2026.04.12</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 권별', '2026.04.12', 'video/영상작업/kb01.mp4')">
+            <div class="gallery-card" data-category="video" onclick="openModal(event, '동물의 임상실험을 멈춰주세요.', 'video', '동물 임상 실험 문제를 주제로한 영상', 'Director. 구*재(학생작품)', '2026.04.12', 'gallery_video/264105549.mp4')">
                 <div class="card-img-wrap">
-                    <img src="images/영상 썸네일/kb01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_video/264105549.png" alt="plastic is forever 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">동물의 임상실험을 멈춰주세요.</h3>
+                    <p class="card-desc">동물 임상 실험 문제를 주제로한 영상</p>
+                    <div class="card-meta"><span class="author">구*재(학생작품)</span><span class="date">2026.04.12</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 나태웅', '2026.04.12', 'video/영상작업/ntw.mp4')">
-                <div class="card-img-wrap">
-                    <img src="images/영상 썸네일/ntw01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
-                </div>
-                <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">나태웅</span><span class="date">2026.04.12</span></div>
-                </div>
-            </div>
-            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 나태웅', '2026.04.12', 'video/영상작업/ksm01.mp4')">
-                <div class="card-img-wrap">
-                    <img src="images/영상 썸네일/ksm01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
-                </div>
-                <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">김선민</span><span class="date">2026.04.12</span></div>
-                </div>
-            </div>
+
+
+
+
+
 
 
             <!--이미지-->
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'TAI로 비주얼 아트 전시 및 콘텐츠 포스터 제작.', 'film', '전시의 소비가 생산으로 이어지는 구조를 이용해 경험 소비와 숏폼 컨텐츠 바이럴 전략을 표현하였다.', '서영주', '2026.04.12', 'images/이미지 작업/syj01.png, images/이미지 작업/syj02.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'AI로 비주얼 아트 전시 및 콘텐츠 포스터 제작.', 'film', '전시의 소비가 생산으로 이어지는 구조를 이용해 경험 소비와 숏폼 컨텐츠 바이럴 전략을 표현하였다.', '서*주(학생작업))', '2026.04.12', 'igallery_images/264105516_2.png, gallery_images/264105516_3.png, gallery_images/264105516_4.png, gallery_images/264105516_5.png, gallery_images/264105516_6.png, gallery_images/264105516_7.png, gallery_images/264105516_8.png, gallery_images/264105516_9.png')">
                 <div class="card-img-wrap">
-                    <img src="images/이미지 작업/syj01.png" alt="Liquid Sculptures 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105516_8.png" alt="Liquid Sculptures 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
                     <h3 class="card-title">AI로 비주얼 아트 전시 및 콘텐츠 포스터 제작.</h3>
                     <p class="card-desc">전시의 소비가 생산으로 이어지는 구조를 이용해 경험 소비와 숏폼 컨텐츠 바이럴 전략을 표현하였다.</p>
-                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.05.18</span></div>
+                    <div class="card-meta"><span class="author">서*주(학생작업)</span><span class="date">2026.05.18</span></div>
                 </div>
             </div>
-
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'AI SNS 카드뉴스 만들기', 'film', 'AZ세대가 선호하는 그림체로 시각적 만족감을 극대화하여 K-라이프스타일 정보를 공급한다.', '권별', '2026.06.01', 'images/이미지 작업/kb_01.png, images/이미지 작업/kb_02.png,images/이미지 작업/kb_03.png, images/이미지 작업/kb_04.png,images/이미지 작업/kb_05.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, '서울역 전시물 기획', 'film', '몰입 경험과 한국적 미감의 결합으로 높은 경쟁력을 갖추고 있으나, 공공장소 내 대규모 인파에 따른 시스템 안정성 확보와지속적인 유지보수 체계 구축이 프로젝트 성공의 핵심 과제로 작용한다.', '나*웅(학생작업)', '2026.02.20', 'gallery_images/264105531_1.png, gallery_images/264105531_2.png, gallery_images/264105531_3.png, gallery_images/264105531_4.png, gallery_images/264105531_5.png, gallery_images/264105531_6.png, gallery_images/264105531_7.png, gallery_images/264105531_8.png')">
                 <div class="card-img-wrap">
-                    <img src="images/이미지 작업/kb_01.png" alt="Minimal Identity 썸네일" class="card-thumb-img">
-                </div>
-                <div class="card-info">
-                    <h3 class="card-title">AI SNS 카드뉴스 만들기</h3>
-                    <p class="card-desc">Z세대가 선호하는 그림체로 시각적 만족감을 극대화하여 K-라이프스타일 정보를 공급한다.</p>
-                    <div class="card-meta"><span class="author">권별</span><span class="date">2026.06.01</span></div>
-                </div>
-            </div>
-
-            <div class="gallery-card" data-category="film" onclick="openModal(event, '서울역 전시물 기획', 'film', '몰입 경험과 한국적 미감의 결합으로 높은 경쟁력을 갖추고 있으나, 공공장소 내 대규모 인파에 따른 시스템 안정성 확보와지속적인 유지보수 체계 구축이 프로젝트 성공의 핵심 과제로 작용한다.', '나태웅', '2026.02.20', 'gallery_images/ntw1.png, gallery_images/ntw2.png, gallery_images/ntw3.png, gallery_images/ntw4.png, gallery_images/ntw5.png')">
-                <div class="card-img-wrap">
-                    <img src="gallery_images/ntw1.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105531_8.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
                     <h3 class="card-title">서울역 전시물 기획</h3>
                     <p class="card-desc">몰입 경험과 한국적 미감의 결합으로 높은 경쟁력을 갖추고 있으나, 공공장소 내 대규모 인파에 따른 시스템 안정성 확보와
 지속적인 유지보수 체계 구축이 프로젝트 성공의 핵심 과제로 작용한다.</p>
-                    <div class="card-meta"><span>나태웅</span><span>2026.02.20</span></div>
+                    <div class="card-meta"><span>나*웅(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'images/이미지 작업/kmj01.png, images/이미지 작업/kmj02.png, images/이미지 작업/kmj03.png, images/이미지 작업/kmj04.png, images/이미지 작업/kmj05.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, '가상 AI 2D 게임 포스터 및 광고 제작하기', 'film', '전투 손맛과 빌드 깊이로 AI 저품질 게임과 명확히 구분하기 핵앤슬래시 전투성과 로그라이크 깊이(강점)를 강조한 콘텐츠', '정*(학생작업)', '2026.02.20', 'gallery_images/264105555_1.png, gallery_images/264105555_2.png, gallery_images/264105555_3.png, gallery_images/264105555_4.png, gallery_images/264105555_5.png, gallery_images/264105555_6.png, gallery_images/264105555_7.png, gallery_images/264105555_8.png')">
                 <div class="card-img-wrap">
-                    <img src="gallery_images/kmj1.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105555_8.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">구민재</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">가상 AI 2D 게임 포스터 및 광고 제작하기</h3>
+                    <p class="card-desc">전투 손맛과 빌드 깊이로 AI 저품질 게임과 명확히 구분하기 핵앤슬래시 전투성과
+로그라이크 깊이(강점)를 강조한 콘텐츠</p>
+                    <div class="card-meta"><span>정*(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-             <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'images/이미지 작업/jj01.png, images/이미지 작업/jj02.png, images/이미지 작업/jj03.png, images/이미지 작업/jj04.png')">
+           <div class="gallery-card" data-category="film" onclick="openModal(event, 'AI 버츄얼 유튜버 포스터 제작', 'film', '관심 유도 후 캐릭터를 이해하고 감정을 연결하며 팬전환을 전략으로하는 콘텐츠', '정*운(학생작업)', '2026.02.20', 'gallery_images/264105635_1.png, gallery_images/264105635_2.png, gallery_images/264105635_3.png, gallery_images/264105635_4.png, gallery_images/264105635_5.png, gallery_images/264105635_6.png, gallery_images/264105635_7.png, gallery_images/264105635_8.png')">
                 <div class="card-img-wrap">
-                    <img src="images/이미지 작업/jj03.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105635_8.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">정진</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">AI 버츄얼 유튜버 포스터 제작</h3>
+                    <p class="card-desc">관심 유도 후 캐릭터를 이해하고 감정을 연결하며 팬전환을 전략으로하는 콘텐츠</p>
+                    <div class="card-meta"><span>정*운(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'gallery_img/hsh1.png, gallery_img/hsh2.png, gallery_img/hsh3.png, gallery_img/hsh4.png, gallery_img/hsh05.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, '인스타그램 카드뉴스 제작', 'film', 'AI 기반 음악 카드뉴스 서비스 전략 요약', '심*건(학생작업)', '2026.02.20', 'gallery_images/264105661_1.png, gallery_images/264105661_2.png, gallery_images/264105661_3.png, gallery_images/264105661_4.png, gallery_images/264105661_5.png, gallery_images/264105661_6.png, gallery_images/264105661_7.png')">
                 <div class="card-img-wrap">
-                    <img src="gallery_img/hsh1.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105661_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">황세희</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">인스타그램 카드뉴스 제작</h3>
+                    <p class="card-desc">AI 기반 음악 카드뉴스 서비스 전략 요약</p>
+                    <div class="card-meta"><span>심*건(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'images/이미지 작업/jyj01.png, images/이미지 작업/jyj02.png, images/이미지 작업/jyj03.png, images/이미지 작업/jyj04.png, images/이미지 작업/jyj05.png, images/이미지 작업/jyj06.png, images/이미지 작업/jyj07.png, images/이미지 작업/jyj08.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, '한국바이닐 시장 홍보 포스터 제작', 'film', 'AI 기반 음악 카드뉴스 서비스 전략 요약', '송*준(학생작업)', '2026.02.20', 'gallery_images/264105681_1.png, gallery_images/264105681_2.png, gallery_images/264105681_3.png, gallery_images/264105681_4.png, gallery_images/264105681_5.png, gallery_images/264105681_6.png, gallery_images/264105681_7.png, gallery_images/264105681_8.png')">
                 <div class="card-img-wrap">
-                    <img src="images/이미지 작업/jyj03.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105681_8.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">주용진</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">한국바이닐 시장 홍보 포스터 제작</h3>
+                    <p class="card-desc">제조혁신과 인프라 개선 포스터</p>
+                    <div class="card-meta"><span>송*준(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 정지운', '2026.04.12', 'gallery_imag/jjw1.png, gallery_imag/jjw2.png, gallery_imag/jjw3.png, igallery_imag/jjw4.png, gallery_imag/jjw5.png, gallery_imag/jjw6.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'NEON NOVA', 'film', '사이버펑크 세계관 기반 AI 걸그룹', '임*연(학생작업)', '2026.02.20', 'gallery_images/264105720_2.png, gallery_images/264105720_3.png, gallery_images/264105720_4.png, gallery_images/264105720_5.png, gallery_images/264105720_6.png')">
                 <div class="card-img-wrap">
-                    <img src="gallery_imag/jjw4.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105720_6.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">정지운</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">NEON NOVA</h3>
+                    <p class="card-desc">사이버펑크 세계관 기반 AI 걸그룹</p>
+                    <div class="card-meta"><span>임*연(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 송예준', '2026.04.12', 'images/이미지 작업/syj2_01.png, images/이미지 작업/syj2_02.png, images/이미지 작업/syj2_03.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'TTINN', 'film', 'AI CONTENT AI 가상 10인조 야구선수 컨셉 아이돌 포스터 제작', '서*채(학생작업)', '2026.02.20', 'gallery_images/264105732_1.png, gallery_images/264105732_2.png, gallery_images/264105732_3.png, gallery_images/264105732_4.png, gallery_images/264105732_5.png, gallery_images/264105732_6.png, gallery_images/264105732_7.png')">
                 <div class="card-img-wrap">
-                    <img src="images/이미지 작업/syj2_02.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105732_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">송예준</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">TTINN</h3>
+                    <p class="card-desc">AI CONTENT AI 가상 10인조 야구선수 컨셉 아이돌 포스터 제작</p>
+                    <div class="card-meta"><span>서*채(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 서은채', '2026.04.12', 'images/이미지 작업/syc01.png, images/이미지 작업/syc02.png, images/이미지 작업/syc03.png, images/이미지 작업/syc04.png,images/이미지 작업/syc05.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, '2026 신입 힙합 아티스트 비주얼', 'film', '포지셔닝 및 브랜딩 전략', '김*욱(학생작업)', '2026.02.20', 'gallery_images/264105734_1.png, gallery_images/264105734_2.png, gallery_images/264105734_3.png, gallery_images/264105734_4.png, gallery_images/264105734_5.png, gallery_images/264105734_6.png, gallery_images/264105734_7.png')">
                 <div class="card-img-wrap">
-                    <img src="images/이미지 작업/syc02.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/264105734_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">서은채</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">2026 신입 힙합 아티스트 비주얼</h3>
+                    <p class="card-desc">포지셔닝 및 브랜딩 전략 </p>
+                    <div class="card-meta"><span>김*욱(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
-            <div class="gallery-card" data-category="film" onclick="openModal(event, 'The Silent Echo', 'film', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. 이강호', '2026.04.12', 'images/이미지 작업/lkh01.png, images/이미지 작업/lkh02.png, images/이미지 작업/lkh03.png, images/이미지 작업/lkh04.png,images/이미지 작업/lkh05.png,images/이미지 작업/lkh06.png')">
+            <div class="gallery-card" data-category="film" onclick="openModal(event, 'TTAOGI', 'film', '2026년에 새로 런칭하는 오토매틱 시계 브랜드인 따오기(TTAOGI)의 글로벌 사업 전략, 로고 및 포스터 제작 ', '윤*호(학생작업)', '2026.02.20', 'gallery_images/234105580_1.png, gallery_images/234105580_2.png, gallery_images/234105580_3.png, gallery_images/234105580_4.png, gallery_images/234105580_5.png, gallery_images/234105580_6.png, gallery_images/234105580_7.png')">
                 <div class="card-img-wrap">
-                    <img src="images/이미지 작업/lkh02.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
+                    <img src="gallery_images/234105580_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
                 </div>
                 <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">이강호</span><span class="date">2026.04.12</span></div>
+                    <h3 class="card-title">TTAOGI</h3>
+                    <p class="card-desc">2026년에 새로 런칭하는 오토매틱 시계 브랜드인 따오기(TTAOGI)의 글로벌 사업 전략, 로고 및 포스터 제작 </p>
+                    <div class="card-meta"><span>윤*호(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, '액션 애니메이션 포스터 제작', 'film', '인지도 부족문제를 데이터 기반 팬 선별 전략으로 해석하기 ', '최*빈(학생작업)', '2026.02.20', 'gallery_images/264105503_1.png, gallery_images/264105503_2.png, gallery_images/264105503_3.png, gallery_images/264105503_4.png, gallery_images/264105503_5.png, gallery_images/264105503_6.png, gallery_images/264105503_7.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105503_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">액션 애니메이션 포스터 제작</h3>
+                    <p class="card-desc">인지도 부족문제를 데이터 기반 팬 선별 전략으로 해석하기 </p>
+                    <div class="card-meta"><span>최*빈(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, 'pomu', 'film', '버추얼 유튜브 굿즈 제작', '박*후(학생작업)', '2026.02.20', 'gallery_images/264105547_1.png, gallery_images/264105547_2.png, gallery_images/264105547_3.png, gallery_images/264105547_4.png, gallery_images/264105547_5.png, gallery_images/264105547_6.png, gallery_images/264105547_7.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105547_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">pomu</h3>
+                    <p class="card-desc">버추얼 유튜브 굿즈 제작</p>
+                    <div class="card-meta"><span>박*후(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, 'AI 를 활용해 신규 게임 캐릭터 포스터 제작', 'film', 'AI 를 활용해 신규 게임 캐릭터 포스터 제작', '오*윤(학생작업)', '2026.02.20', 'gallery_images/264105617_1.png, gallery_images/264105617_2.png, gallery_images/264105617_3.png, gallery_images/264105617_4.png, gallery_images/264105617_5.png, gallery_images/264105617_6.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105617_6.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">AI 를 활용해 신규 게임 캐릭터 포스터 제작</h3>
+                    <p class="card-desc">“가장 좋은 시장은 ‘게임을 하지 않아도 캐릭터를 소비하는 시장’이다</p>
+                    <div class="card-meta"><span>오*윤(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, '버추얼 스트리머 기반 K-pop 아이돌 기획', 'film', '버추얼 스트리머 기반 K-pop 아이돌 기획', '오*윤(학생작업)', '2026.02.20', 'gallery_images/264105640_1.png, gallery_images/264105640_2.png, gallery_images/264105640_3.png, gallery_images/264105640_4.png, gallery_images/264105640_5.png, gallery_images/264105640_6.png, gallery_images/264105640_7.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105640_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">버추얼 스트리머 기반 K-pop 아이돌 기획</h3>
+                    <p class="card-desc"> AI 아이돌의 감정적 한계를, 스토리 기반 콘텐츠와 인간적 요소 결합</p>
+                    <div class="card-meta"><span>오*윤(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, 'AI 공포 콘텐츠 버추얼 유튜버', 'film', 'AI 공포 콘텐츠 버추얼 유튜버', '임*(학생작업)', '2026.02.20', 'gallery_images/264105670_1.png, gallery_images/264105670_2.png, gallery_images/264105670_3.png, gallery_images/264105670_4.png, gallery_images/264105670_5.png, gallery_images/264105670_6.png, gallery_images/264105670_7.png, gallery_images/264105670_8.png, gallery_images/264105670_9.png, gallery_images/264105670_10.png, gallery_images/264105670_11.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105670_11.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">AI 공포 콘텐츠 버추얼 유튜버</h3>
+                    <p class="card-desc"> 포스터 / 프로필 사진 제작</p>
+                    <div class="card-meta"><span>임*(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+              <div class="gallery-card" data-category="film" onclick="openModal(event, 'NOISE', 'film', '가상영화 세계관을 바탕으로한 AI포스터 제작', '백*아(학생작업)', '2026.02.20', 'gallery_images/264105693_1.png, gallery_images/264105693_2.png, gallery_images/264105693_3.png, gallery_images/264105693_4.png, gallery_images/264105693_5.png, gallery_images/264105693_6.png, gallery_images/264105693_7.png, gallery_images/264105693_8.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105693_8.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">NOISE</h3>
+                    <p class="card-desc"> 가상영화 세계관을 바탕으로한 AI포스터 제작</p>
+                    <div class="card-meta"><span>백*아(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+              <div class="gallery-card" data-category="film" onclick="openModal(event, 'AI 언어 학습 컨텐츠 마스코트 캐릭터 제작', 'film', '팬덤 밀착형 숏폼 폭격', '최*인(학생작업)', '2026.02.20', 'gallery_images/264105712_1.png, gallery_images/264105712_2.png, gallery_images/264105712_3.png, gallery_images/264105712_4.png, gallery_images/264105712_5.png, gallery_images/264105712_6.png, gallery_images/264105712_7.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105712_7.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">AI 언어 학습 컨텐츠 마스코트 캐릭터 제작</h3>
+                    <p class="card-desc"> 팬덤 밀착형 숏폼 폭격</p>
+                    <div class="card-meta"><span>최*인(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, '패션 브랜드 런칭', 'film', 'SNS 카드뉴스 제작', '김*연(학생작업)', '2026.02.20', 'gallery_images/264105759_1.png, gallery_images/264105759_2.png, gallery_images/264105759_3.png, gallery_images/264105759_4.png, gallery_images/264105759_5.png, gallery_images/264105759_6.png, gallery_images/264105759_7.png, gallery_images/264105759_8.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105759_8.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">패션 브랜드 런칭</h3>
+                    <p class="card-desc"> SNS 카드뉴스 제작</p>
+                    <div class="card-meta"><span>김*연(학생작업)</span><span>2026.02.20</span></div>
+                </div>
+            </div>
+             <div class="gallery-card" data-category="film" onclick="openModal(event, 'Byte&Bite', 'film', 'AI 식당 포스터 제작', '김*영(학생작업)', '2026.02.20', 'gallery_images/264105723_1.png, gallery_images/264105723_2.png, gallery_images/264105723_3.png, gallery_images/264105723_4.png, gallery_images/264105723_5.png, gallery_images/264105723_6.png, gallery_images/264105723_7.png, gallery_images/264105723_8.png')">
+                <div class="card-img-wrap">
+                    <img src="gallery_images/264105723_8.png" alt="Neon Horizon 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">Byte&Bite</h3>
+                    <p class="card-desc"> AI 식당 포스터 제작</p>
+                    <div class="card-meta"><span>김*영(학생작업)</span><span>2026.02.20</span></div>
                 </div>
             </div>
 
-            
-            <div class="gallery-card" data-category="video" onclick="openModal(event, 'The Silent Echo', 'video', '우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다. 빛과 어둠의 대비를 극대화했습니다.', 'Director. Alex', '2026.04.12', 'video/video02.mov,video/video01.mov')">
-                <div class="card-img-wrap">
-                    <img src="images/video_01.png" alt="The Silent Echo 썸네일" class="card-thumb-img">
-                </div>
-                <div class="card-info">
-                    <h3 class="card-title">The Silent Echo</h3>
-                    <p class="card-desc">우주와 침묵을 주제로 한 시네마틱 영상 프로젝트입니다.</p>
-                    <div class="card-meta"><span class="author">서영주</span><span class="date">2026.04.12</span></div>
-                </div>
-            </div>
+
+
+
+
+
+
+
+
+
 
 
 
@@ -240,6 +308,6 @@
             </div>
         </div>
     </div>
-    <script src="js/gallery_script.js"></script>
+    <script src="gallery_script.js"></script>
 </body>
 </html>
