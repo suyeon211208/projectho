@@ -147,14 +147,19 @@ body {
     transform: translate(-50%, 0); /* 제자리인 중앙으로 복귀 */
 }
 
-/* 6. 영상 배경 설정 */
+/* 6. 히어로 영상 스크롤 영역 */
+.hero-wrap {
+    position: relative;
+    height: 220vh; /* 이 높이만큼 스크롤되는 동안에만 영상이 재생됨 */
+}
+
 .video-container {
-    position: fixed;
+    position: sticky; /* hero-wrap 내부에서만 화면에 고정되고, 영역이 끝나면 자연스럽게 흘러감 */
     top: 0;
     left: 0;
     width: 100%;
     height: 100vh;
-    z-index: -1; /* 헤더 및 콘텐츠보다 뒤로 배치 */
+    z-index: 0;
     overflow: hidden;
 }
 
@@ -164,13 +169,15 @@ body {
     object-fit: cover; /* 화면 비율에 맞춰 꽉 차게 조절 */
 }
 
-/* 7. 콘텐츠 영역 및 가상 스크롤 공간 */
+/* 7. 히어로 텍스트 영역 (영상 위에 고정 노출되는 오버레이) */
 .scroll-space {
-    height: 100vh; /* 각 페이지 공간을 화면 높이만큼 확보 */
+    height: 100vh; /* 화면 높이만큼 확보 */
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
+    position: sticky; /* 영상과 동일하게 고정되어 오버레이로 보임 */
+    top: 0;
+    z-index: 1;
 }
 
 /* 영상 위에 반투명하게 올라가는 글상자 */
@@ -198,7 +205,7 @@ body {
 }
 
 /* 히어로 텍스트: 비디오 위에 노출되는 메인 카피 (좌측 정렬 + 스크롤 인터랙션) */
-#about.scroll-space {
+#hero.scroll-space {
     justify-content: flex-start;
     padding-left: 10%;
 }
@@ -246,9 +253,13 @@ body {
         font-size: 16px;
     }
 
-    #about.scroll-space {
+    #hero.scroll-space {
         padding-left: 6%;
         padding-right: 6%;
+    }
+
+    .hero-wrap {
+        height: 200vh;
     }
 }
 
@@ -286,5 +297,225 @@ body {
 
     .nav-menu a {
         font-size: 1.1rem;
+    }
+}
+
+/* 9. 히어로 이후 등장하는 기업형 콘텐츠 섹션 */
+.site-main {
+    position: relative;
+    z-index: 1;
+    background-color: #000;
+}
+
+.content-section {
+    padding: 120px 6%;
+}
+
+.content-section--alt {
+    background-color: #0a0a0a;
+}
+
+.section-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.section-eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #999;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin-bottom: 18px;
+}
+
+.section-desc {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #ccc;
+    max-width: 640px;
+    margin: 0 auto 40px;
+}
+
+.section-link {
+    display: inline-block;
+    margin-top: 32px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 4px;
+    transition: border-color 0.3s ease, opacity 0.3s ease;
+}
+
+.section-link:hover {
+    border-color: #fff;
+}
+
+/* 서비스 카드 3분할 */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    text-align: left;
+    margin-top: 50px;
+}
+
+.service-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 32px 28px;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.service-index {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #777;
+    margin-bottom: 14px;
+}
+
+.service-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.service-card p {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: #bbb;
+}
+
+/* 갤러리 미리보기 썸네일 */
+.gallery-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 50px;
+}
+
+.gallery-preview-item {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gallery-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+}
+
+.gallery-preview-item:hover img {
+    transform: scale(1.06);
+}
+
+/* 스토리 인용구 */
+.story-quote {
+    font-size: 1.15rem;
+    line-height: 1.9;
+    color: #eee;
+    font-style: italic;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* CTA 섹션 */
+.cta-section {
+    background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
+}
+
+.btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 16px 36px;
+    background: #fff;
+    color: #000;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    background: #eee;
+}
+
+/* 푸터 */
+.main-footer {
+    background-color: #000;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 50px 6%;
+}
+
+.footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+}
+
+.footer-nav {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-nav a {
+    color: #999;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+}
+
+.footer-nav a:hover {
+    color: #fff;
+}
+
+.footer-copy {
+    color: #666;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        padding: 80px 6%;
+    }
+
+    .services-grid,
+    .gallery-preview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
     }
 }
