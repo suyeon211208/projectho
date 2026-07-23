@@ -102,7 +102,7 @@ canvas {
 
 /* Controls Panel Floating Dock */
 .controls-panel {
-  position: absolute;
+  position: fixed;
   right: 20px;
   bottom: 20px;
   background: rgba(15, 17, 26, 0.85);
@@ -514,7 +514,7 @@ canvas {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
+    position: fixed;
     right: 20px;
     bottom: 20px;
     width: 48px;
