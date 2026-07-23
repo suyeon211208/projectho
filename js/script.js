@@ -43,10 +43,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 히어로 텍스트 박스: 스크롤에 따라 사라지며 좌측으로 흘러나가는 인터랙션
     const heroBox = document.querySelector('.hero-box');
+    const heroWrap = document.getElementById('hero-wrap');
 
-    function updateHeroParallax() {
+    // 히어로 영역(hero-wrap) 내부에서만 영상이 스크러빙되도록 스크롤 가능 범위를 계산
+    let heroWrapTop = 0;
+    let heroScrollRange = 1;
+
+    function measureHeroWrap() {
+        if (!heroWrap) return;
+        heroWrapTop = heroWrap.getBoundingClientRect().top + window.scrollY;
+        heroScrollRange = Math.max(heroWrap.offsetHeight - window.innerHeight, 1);
+    }
+
+    function updateHeroParallax(heroProgress) {
         if (!heroBox) return;
-        const heroProgress = Math.min(Math.max(window.scrollY / window.innerHeight, 0), 1);
 
         heroBox.style.opacity = String(1 - heroProgress);
         heroBox.style.transform = `translate(${-heroProgress * 80}px, ${-heroProgress * 30}px)`;
@@ -56,8 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 스크롤 위치에 따라 헤더 상태 제어 및 목표 영상 시간 계산
     function handleScrollEffects() {
         const currentScroll = window.scrollY;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollFraction = maxScroll <= 0 ? 0 : currentScroll / maxScroll;
 
         // 1. 헤더 클래스 제어 (스크롤이 20px 이상 내려가면 scrolled 클래스 추가)
         if (currentScroll > 20) {
@@ -66,13 +74,16 @@ document.addEventListener('DOMContentLoaded', () => {
             header.classList.remove('scrolled');
         }
 
-        // 2. 비디오 목표 재생 시간 계산
+        // 2. 히어로 영역 진행률 계산 (hero-wrap 구간에서만 0 -> 1로 증가)
+        const heroProgress = Math.min(Math.max((currentScroll - heroWrapTop) / heroScrollRange, 0), 1);
+
+        // 3. 비디오 목표 재생 시간 계산
         if (video.duration) {
-            targetTime = video.duration * scrollFraction;
+            targetTime = video.duration * heroProgress;
         }
 
-        // 3. 히어로 텍스트 패럴랙스 업데이트
-        updateHeroParallax();
+        // 4. 히어로 텍스트 패럴랙스 업데이트
+        updateHeroParallax(heroProgress);
     }
 
     // 영상을 부드럽게 재생시키는 루프 함수
@@ -85,14 +96,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
         requestAnimationFrame(renderLoop);
     }
-
-    // 영상 메타데이터 로드 완료 시 초기화 및 루프 시작
-    video.addEventListener('loadedmetadata', () => {
-        handleScrollEffects();
-        requestAnimationFrame(renderLoop);
-    });
-
-    // 스크롤 및 화면 크기 변경 시 이벤트 바인딩
-    window.addEventListener('scroll', handleScrollEffects);
-    window.addEventListener('resize', handleScrollEffects);
-});
