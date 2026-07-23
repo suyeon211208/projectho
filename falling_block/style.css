@@ -470,11 +470,17 @@ canvas {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .controls-panel {
-    gap: 12px;
-    padding: 12px;
-    justify-content: center;
+    gap: 8px;
+    padding: 10px;
   }
   .header-bar {
     padding: 8px 16px;
+  }
+  .action-btn .btn-label {
+    display: none;
+  }
+  .action-btn {
+    padding: 8px;
+    gap: 0;
   }
 }
