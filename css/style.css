@@ -153,12 +153,20 @@ body {
     height: 220vh; /* 이 높이만큼 스크롤되는 동안에만 영상이 재생됨 */
 }
 
-.video-container {
-    position: sticky; /* hero-wrap 내부에서만 화면에 고정되고, 영역이 끝나면 자연스럽게 흘러감 */
+/* hero-wrap 안에서만 화면에 고정되고, 영역이 끝나면 자연스럽게 흘러가는 무대.
+   영상과 히어로 텍스트를 이 하나의 sticky 요소 위에 겹쳐 쌓는다. */
+.hero-stage {
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
     height: 100vh;
+    overflow: hidden;
+}
+
+.video-container {
+    position: absolute;
+    inset: 0;
     z-index: 0;
     overflow: hidden;
 }
@@ -171,12 +179,12 @@ body {
 
 /* 7. 히어로 텍스트 영역 (영상 위에 고정 노출되는 오버레이) */
 .scroll-space {
-    height: 100vh; /* 화면 높이만큼 확보 */
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    position: sticky; /* 영상과 동일하게 고정되어 오버레이로 보임 */
-    top: 0;
+    position: absolute; /* hero-stage 안에서 영상과 같은 자리에 겹쳐짐 */
+    inset: 0;
     z-index: 1;
 }
 
