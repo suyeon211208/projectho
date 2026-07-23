@@ -467,14 +467,39 @@ canvas {
   color: #00F0FF;
 }
 
+/* Panel Toggle (hamburger) Button — hidden on desktop, shown on mobile */
+.panel-toggle-btn {
+  display: none;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .controls-panel {
-    gap: 8px;
-    padding: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+    bottom: 80px;
+    max-width: 220px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    white-space: normal;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+  .controls-panel.panel-collapsed {
+    transform: scale(0.85) translateY(12px);
+    opacity: 0;
+    pointer-events: none;
   }
   .header-bar {
     padding: 8px 16px;
+  }
+  .spectrum-bar {
+    width: 120px;
+  }
+  .actions-section {
+    flex-direction: column;
+    align-items: stretch;
   }
   .action-btn .btn-label {
     display: none;
@@ -482,5 +507,25 @@ canvas {
   .action-btn {
     padding: 8px;
     gap: 0;
+    justify-content: center;
+  }
+
+  .panel-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(15, 17, 26, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    font-size: 1.3rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    z-index: 20;
+    cursor: pointer;
   }
 }
