@@ -13,6 +13,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleElement = document.getElementById('gallery-title');
 
     /* =============================================================
+       0. [About 동일 효과] 모바일 햄버거 메뉴 토글
+       ============================================================= */
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    const menuBackdrop = document.getElementById('menu-backdrop');
+
+    function closeMobileMenu() {
+        if (navMenu) navMenu.classList.remove('open');
+        if (menuToggle) {
+            menuToggle.classList.remove('open');
+            menuToggle.setAttribute('aria-expanded', 'false');
+        }
+        if (menuBackdrop) menuBackdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function toggleMobileMenu() {
+        const isOpen = navMenu.classList.toggle('open');
+        menuToggle.classList.toggle('open', isOpen);
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+        if (menuBackdrop) menuBackdrop.classList.toggle('open', isOpen);
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', toggleMobileMenu);
+        navMenu.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+        if (menuBackdrop) menuBackdrop.addEventListener('click', closeMobileMenu);
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) closeMobileMenu();
+        });
+    }
+
+    /* =============================================================
        1. [About 동일 효과] 마우스 무브 트래킹 액체 파티클 시스템
        ============================================================= */
     let lastX = 0, lastY = 0;
