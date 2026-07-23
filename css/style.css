@@ -94,6 +94,50 @@ body {
     padding-bottom: 4px;
 }
 
+/* 4-1. 햄버거 메뉴 버튼 (기본: 데스크톱에서는 숨김) */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 11;
+}
+
+.menu-toggle-bar {
+    width: 100%;
+    height: 2px;
+    background-color: #fff;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.menu-toggle.open .menu-toggle-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-toggle.open .menu-toggle-bar:nth-child(2) { opacity: 0; }
+.menu-toggle.open .menu-toggle-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* 메뉴 오픈 시 배경을 어둡게 덮는 백드롭 (모바일 전용) */
+.menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    z-index: 9;
+}
+
+.menu-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* 5. [인터랙션] 스크롤이 내려갔을 때 (.scrolled 클래스 활성화) */
 
 /* 네비게이션 메뉴가 부드럽게 내려오며 중앙에 표시됨 */
@@ -151,4 +195,41 @@ body {
     font-size: 16px;
     color: #ccc;
     line-height: 1.6;
+}
+
+/* 8. 모바일 화면: 상단 메뉴를 햄버거 슬라이드 메뉴로 전환 */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-menu,
+    .main-header.scrolled .nav-menu {
+        position: fixed;
+        top: 0;
+        left: auto;
+        right: 0;
+        width: min(75vw, 320px);
+        height: 100vh;
+        background-color: #0a0a0a;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 32px;
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        z-index: 10;
+    }
+
+    .nav-menu.open,
+    .main-header.scrolled .nav-menu.open {
+        transform: translateX(0);
+    }
+
+    .nav-menu a {
+        font-size: 1.1rem;
+    }
 }
