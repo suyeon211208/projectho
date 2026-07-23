@@ -100,6 +100,50 @@ html {
     border-bottom: 2px solid #0f172a;
     padding-bottom: 4px;
 }
+
+/* 5. 햄버거 메뉴 버튼 (기본: 데스크톱에서는 숨김) */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 10001;
+}
+
+.menu-toggle-bar {
+    width: 100%;
+    height: 2px;
+    background-color: #0f172a;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.menu-toggle.open .menu-toggle-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.menu-toggle.open .menu-toggle-bar:nth-child(2) { opacity: 0; }
+.menu-toggle.open .menu-toggle-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* 메뉴 오픈 시 배경을 어둡게 덮는 백드롭 (모바일 전용) */
+.menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+    z-index: 9998;
+}
+
+.menu-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
 /* 파티클 배경 화면 정의 */
 #particle-container {
     position: fixed;
@@ -184,6 +228,11 @@ html {
     height: 300vh;
 }
 
+/* 섹션 1~4 카드 스택 애니메이션 구간: 패널 4장이 순서대로 쌓이도록 스크롤 길이 확보 */
+#transition-section-trigger {
+    height: 700vh;
+}
+
 .sticky-section {
     position: -webkit-sticky;
     position: sticky; 
@@ -234,7 +283,7 @@ html {
 }
 
 .mask-text {
-    font-size: 6.5rem;
+    font-size: 4rem;
     line-height: 1.0;
     letter-spacing: -0.04em;
     will-change: transform, opacity;
@@ -243,6 +292,13 @@ html {
 
 .text-light { font-weight: 100; color: #334155; }
 .text-bold { font-weight: 900; color: #0f172a; }
+
+.mask-char {
+    display: inline-block;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: clip-path;
+}
 
 .grain-overlay {
     position: absolute;
@@ -272,6 +328,25 @@ html {
     animation: liquidMelt 12s ease-in-out infinite alternate;
 }
 
+.design-sphere-2 {
+    top: 12%;
+    left: 8%;
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle at 40% 40%, rgba(20,184,166,0.35) 0%, rgba(59,130,246,0.18) 40%, transparent 75%);
+    animation-duration: 16s;
+}
+
+.design-sphere-3 {
+    bottom: 8%;
+    right: 10%;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle at 60% 30%, rgba(236,72,153,0.3) 0%, rgba(139,92,246,0.15) 45%, transparent 75%);
+    animation-duration: 20s;
+    animation-direction: alternate-reverse;
+}
+
 @keyframes liquidMelt {
     0% { border-radius: 43% 57% 65% 35% / 40% 45% 55% 60%; }
     50% { border-radius: 60% 40% 40% 60% / 50% 60% 40% 50%; }
@@ -299,9 +374,21 @@ html {
     z-index: 2;
     clip-path: inset(100% 0% 0% 0%);
 }
-.panel-content { max-width: 750px; text-align: left; } 
+.panel-3 {
+    background-color: #e2e8f0;
+    box-shadow: 0 -30px 100px rgba(15, 23, 42, 0.05);
+    z-index: 3;
+    clip-path: inset(100% 0% 0% 0%);
+}
+.panel-4 {
+    background-color: #cbd5e1;
+    box-shadow: 0 -30px 100px rgba(15, 23, 42, 0.06);
+    z-index: 4;
+    clip-path: inset(100% 0% 0% 0%);
+}
+.panel-content { max-width: 750px; text-align: left; }
 .panel-meta { font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 1rem; letter-spacing: 0.1em; }
-.panel-title { font-size: 3.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem; }
+.panel-title { font-size: 3.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem; width: 85vw; max-width: 85vw; }
 
 .panel-desc { 
     font-size: 1.25rem; 
@@ -365,7 +452,37 @@ html {
 
 @media (max-width: 768px) {
     .main-title { font-size: 3rem; }
-    .mask-text { font-size: 3.5rem; }
-    .panel-title { font-size: 2.2rem; }
+    .mask-text { font-size: 2.2rem; }
+    .panel-title { font-size: 2.2rem; width: 90vw; max-width: 90vw; }
     .panel { padding-left: 5%; padding-right: 5%; }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        left: auto;
+        right: 0;
+        width: min(75vw, 320px);
+        height: 100vh;
+        background-color: #ffffff;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 32px;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: -10px 0 40px rgba(15, 23, 42, 0.08);
+        z-index: 10000;
+    }
+
+    .nav-menu.open {
+        transform: translateX(0);
+    }
+
+    .nav-menu a {
+        font-size: 1.1rem;
+    }
 }
