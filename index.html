@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form&Flow</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="main-header">
@@ -26,22 +26,121 @@
 </header>
 
 <div class="menu-backdrop" id="menu-backdrop"></div>
-    <div class="video-container">
-        <video id="scroll-video" src="assets/background.mp4" playsinline preload="auto"></video>
-    </div>
-  <section id="about" class="scroll-space">
-        <div class="info-box hero-box">
-            <h1 class="hero-title">아이디어를 결과물과 자산으로 바꾸는<br>AI 창작 교육 스튜디오</h1>
-            <p class="hero-desc">
-                우리는 생성형 AI를 활용해 이미지, 영상, 웹 기반 결과물을 만들고,<br>
-                그 과정을 교육, 콘텐츠, 도서, IP로 확장하는 브랜드입니다.<br>
-                스토리텔링과 기획, 비주얼 개발, UI/UX 설계, 제작과 발표까지<br>
-                하나의 아이디어가 실제 형태를 갖추는 전 과정을 설계합니다.
-            </p>
-            <p class="hero-closing">배운 것이 끝나지 않고, 만든 것이 남도록.</p>
-        </div>
-    </section>
 
-    <script src="js/script.js"></script>
+    <div class="hero-wrap" id="hero-wrap">
+        <div class="video-container">
+            <video id="scroll-video" src="assets/background.mp4" playsinline preload="auto"></video>
+        </div>
+        <section id="hero" class="scroll-space">
+            <div class="info-box hero-box">
+                <h1 class="hero-title">아이디어를 결과물과 자산으로 바꾸는<br>AI 창작 교육 스튜디오</h1>
+                <p class="hero-desc">
+                    우리는 생성형 AI를 활용해 이미지, 영상, 웹 기반 결과물을 만들고,<br>
+                    그 과정을 교육, 콘텐츠, 도서, IP로 확장하는 브랜드입니다.<br>
+                    스토리텔링과 기획, 비주얼 개발, UI/UX 설계, 제작과 발표까지<br>
+                    하나의 아이디어가 실제 형태를 갖추는 전 과정을 설계합니다.
+                </p>
+                <p class="hero-closing">배운 것이 끝나지 않고, 만든 것이 남도록.</p>
+            </div>
+        </section>
+    </div>
+
+    <main class="site-main">
+        <section id="services" class="content-section">
+            <div class="section-inner">
+                <span class="section-eyebrow">WHAT WE DO</span>
+                <h2 class="section-title">Form&amp;Flow가 하는 일</h2>
+                <p class="section-desc">아이디어가 결과물이 되고, 결과물이 자산이 되기까지의 과정을 함께 설계합니다.</p>
+
+                <div class="services-grid">
+                    <div class="service-card">
+                        <span class="service-index">01</span>
+                        <h3>AI 창작 교육</h3>
+                        <p>이미지·영상·웹 제작에 생성형 AI를 활용하는 프로젝트형 실습 교육을 진행합니다.</p>
+                    </div>
+                    <div class="service-card">
+                        <span class="service-index">02</span>
+                        <h3>콘텐츠 제작</h3>
+                        <p>스토리텔링과 비주얼 개발을 바탕으로 완성도 있는 콘텐츠와 결과물을 만듭니다.</p>
+                    </div>
+                    <div class="service-card">
+                        <span class="service-index">03</span>
+                        <h3>브랜드 &amp; IP 확장</h3>
+                        <p>완성한 프로젝트가 도서, 서비스, IP로 이어지도록 확장 전략을 함께 그립니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery-preview" class="content-section content-section--alt">
+            <div class="section-inner">
+                <span class="section-eyebrow">GALLERY</span>
+                <h2 class="section-title">우리가 만든 결과물</h2>
+                <p class="section-desc">교육 과정을 통해 완성된 학생·프로젝트 작업물을 소개합니다.</p>
+
+                <div class="gallery-preview-grid">
+                    <a class="gallery-preview-item" href="gallery.html">
+                        <img src="gallery_video/264105531.png" alt="plastic is forever 썸네일">
+                    </a>
+                    <a class="gallery-preview-item" href="gallery.html">
+                        <img src="gallery_video/264105549.png" alt="동물의 임상실험을 멈춰주세요 썸네일">
+                    </a>
+                    <a class="gallery-preview-item" href="gallery.html">
+                        <img src="gallery_video/1234.png" alt="숏폼 중독 이슈 영상 썸네일">
+                    </a>
+                </div>
+
+                <a class="section-link" href="gallery.html">갤러리 전체보기 →</a>
+            </div>
+        </section>
+
+        <section id="story-preview" class="content-section">
+            <div class="section-inner">
+                <span class="section-eyebrow">STORY</span>
+                <h2 class="section-title">배운 것이 끝나지 않도록</h2>
+                <blockquote class="story-quote">
+                    "수업은 단지 듣는 시간이 아니라, 하나의 프로젝트가 완성되고<br>
+                    그것이 포트폴리오가 되고, 때로는 책이 되고, IP가 되는 출발점입니다."
+                </blockquote>
+                <a class="section-link" href="story.html">스토리 더 보기 →</a>
+            </div>
+        </section>
+
+        <section id="content-preview" class="content-section content-section--alt">
+            <div class="section-inner">
+                <span class="section-eyebrow">CONTENT &amp; BOOK</span>
+                <h2 class="section-title">콘텐츠, 도서 그리고 IP</h2>
+                <p class="section-desc">
+                    프로젝트에서 시작된 아이디어는 워크북, 도서, 브랜드 콘텐츠로 이어집니다.<br>
+                    교육과 제작을 넘어, 오래 남는 자산을 함께 만듭니다.
+                </p>
+                <a class="section-link" href="content.html">콘텐츠 살펴보기 →</a>
+            </div>
+        </section>
+
+        <section id="contact" class="content-section cta-section">
+            <div class="section-inner">
+                <h2 class="section-title">함께 만들어볼까요?</h2>
+                <p class="section-desc">아이디어를 결과물과 자산으로 바꾸는 여정, Form&amp;Flow와 함께 시작하세요.</p>
+                <a class="btn" href="about.html">브랜드 소개 보기</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-inner">
+            <div class="logo">Form&amp;Flow</div>
+            <nav class="footer-nav">
+                <a href="about.html">About</a>
+                <a href="gallery.html">Gallery</a>
+                <a href="story.html">Story</a>
+                <a href="code.html">Code</a>
+                <a href="content.html">Content</a>
+            </nav>
+            <p class="footer-copy">&copy; 2026 Form&amp;Flow. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
