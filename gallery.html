@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form&Flow</title>
-    <link rel="stylesheet" href="css/gallery_style.css">
+    <link rel="stylesheet" href="gallery_style.css">
 </head>
 <body>
 
@@ -62,6 +62,16 @@
                     <h3 class="card-title">동물의 임상실험을 멈춰주세요.</h3>
                     <p class="card-desc">동물 임상 실험 문제를 주제로한 영상</p>
                     <div class="card-meta"><span class="author">구*재(학생작품)</span><span class="date">2026.04.12</span></div>
+                </div>
+            </div>
+            <div class="gallery-card" data-category="video" onclick="openModal(event, '숏폼 중독 이슈에 대한 심각성을 다루는 영상', 'video', '숏폼 중독 이슈에 대한 심각성을 다루는 영상', 'Director. 김*욱(학생작품)', '2026.04.12', 'gallery_video/1234.mp4, gallery_video/1234_1.mp4')">
+                <div class="card-img-wrap">
+                    <img src="gallery_video/1234.png" alt="plastic is forever 썸네일" class="card-thumb-img">
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">숏폼 중독 이슈에 대한 심각성을 다루는 영상</h3>
+                    <p class="card-desc">숏폼 중독 이슈에 대한 심각성을 다루는 영상</p>
+                    <div class="card-meta"><span class="author">김*욱(학생작품)</span><span class="date">2026.04.12</span></div>
                 </div>
             </div>
 
@@ -290,7 +300,8 @@
                     
                     <img id="modal-real-img" src="" alt="상세 이미지" class="modal-main-img">
                     <video id="modal-real-video" src="" class="modal-main-video" autoplay muted loop playsinline controls style="display: none;"></video>
-                    
+                    <iframe id="modal-real-youtube" src="" class="modal-main-youtube" style="display: none;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
                     <button type="button" class="slide-btn next-btn" onclick="moveSlide(1)">&rsaquo;</button>
                 </div>
 
@@ -308,6 +319,6 @@
             </div>
         </div>
     </div>
-    <script src="js/gallery_script.js"></script>
+    <script src="gallery_script.js"></script>
 </body>
 </html>
